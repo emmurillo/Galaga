@@ -3,42 +3,81 @@
 #include <stdio.h>
 
 static void
-print_hello (GtkWidget *widget,
+start_game (GtkWidget *widget,
              gpointer   data)
 {
-  g_print ("Hello World\n");
+  GtkWidget *GameWin;
+  GtkWidget *GameBox;
+  GtkWidget *WelcomeLabel;
+  GtkWidget *PlaneImg;
+
+  WelcomeLabel = gtk_label_new("Bienvenido a Galaga");
+
+  GameWin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_position(GTK_WINDOW(GameWin), GTK_WIN_POS_CENTER);
+  gtk_window_set_default_size(GTK_WINDOW(GameWin), 600, 400);
+  gtk_window_set_title(GTK_WINDOW(GameWin), "Galaga");
+  gtk_container_set_border_width(GTK_CONTAINER(GameWin), 5);
+
+
+  gtk_container_set_border_width(GTK_CONTAINER(GameWin), 2);
+
+  GameBox = gtk_fixed_new();
+  gtk_container_add(GTK_CONTAINER(GameWin), GameBox);
+
+  gtk_label_set_justify(GTK_LABEL(WelcomeLabel), GTK_JUSTIFY_LEFT);
+
+  gtk_fixed_put (GTK_FIXED (GameBox), WelcomeLabel, 50, 50);
+
+  PlaneImg = gtk_image_new_from_file("src/plane.png");
+  gtk_container_add(GTK_CONTAINER(GameBox), PlaneImg);
+
+
+  g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
+        G_CALLBACK(gtk_main_quit), G_OBJECT(GameWin));
+
+  gtk_widget_show_all(GameWin);
 }
 
-int
-main (int   argc,
-      char *argv[])
+
+int main( int argc, char *argv[])
 {
-  GtkBuilder *builder;
-  GObject *window;
-  GObject *button;
 
-  gtk_init (&argc, &argv);
-    const gchar *fil;
-    fil="builder.ui";
+  GtkWidget *window;
+  GtkWidget *vbox;
 
-  /* Construct a GtkBuilder instance and load our UI description */
-  builder = gtk_builder_new ();
-  gtk_builder_add_from_file (builder, fil, NULL);
+  GtkWidget *start;
+  GtkWidget *help;
+  GtkWidget *close;
 
-  /* Connect signal handlers to the constructed widgets. */
-  window = gtk_builder_get_object (builder, "window");
-  g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+  gtk_init(&argc, &argv);
 
-  button = gtk_builder_get_object (builder, "button1");
-  g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
+  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+  gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
+  gtk_window_set_title(GTK_WINDOW(window), "Galaga");
+  gtk_container_set_border_width(GTK_CONTAINER(window), 5);
 
-  button = gtk_builder_get_object (builder, "button2");
-  g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
+  vbox = gtk_vbox_new(TRUE, 1);
+  gtk_container_add(GTK_CONTAINER(window), vbox);
 
-  button = gtk_builder_get_object (builder, "quit");
-  g_signal_connect (button, "clicked", G_CALLBACK (gtk_main_quit), NULL);
+  start = gtk_button_new_with_label("Iniciar");
+  help = gtk_button_new_with_label("Ayuda");
+  close = gtk_button_new_with_label("Cerrar");
 
-  gtk_main ();
+  gtk_box_pack_start(GTK_BOX(vbox), start, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), help, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), close, TRUE, TRUE, 0);
+
+  g_signal_connect_swapped(G_OBJECT(window), "destroy",
+        G_CALLBACK(gtk_main_quit), G_OBJECT(window));
+
+  g_signal_connect(G_OBJECT(start), "clicked",
+      G_CALLBACK(start_game), NULL);
+
+  gtk_widget_show_all(window);
+
+  gtk_main();
 
   return 0;
 }

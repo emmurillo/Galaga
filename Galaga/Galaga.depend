@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1409372746 source:/home/emmanuel/Documentos/Galaga/Galaga/main.c
+1409433839 source:/home/emmanuel/Documentos/Galaga/Galaga/main.c
 	<stdlib.h>
 	<gtk/gtk.h>
 	<stdio.h>
