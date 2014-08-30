@@ -8,10 +8,7 @@ start_game (GtkWidget *widget,
 {
   GtkWidget *GameWin;
   GtkWidget *GameBox;
-  GtkWidget *WelcomeLabel;
   GtkWidget *PlaneImg;
-
-  WelcomeLabel = gtk_label_new("Bienvenido a Galaga");
 
   GameWin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_position(GTK_WINDOW(GameWin), GTK_WIN_POS_CENTER);
@@ -25,13 +22,9 @@ start_game (GtkWidget *widget,
   GameBox = gtk_fixed_new();
   gtk_container_add(GTK_CONTAINER(GameWin), GameBox);
 
-  gtk_label_set_justify(GTK_LABEL(WelcomeLabel), GTK_JUSTIFY_LEFT);
-
-  gtk_fixed_put (GTK_FIXED (GameBox), WelcomeLabel, 50, 50);
-
   PlaneImg = gtk_image_new_from_file("src/plane.png");
   gtk_container_add(GTK_CONTAINER(GameBox), PlaneImg);
-
+  gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,300,300);
 
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
         G_CALLBACK(gtk_main_quit), G_OBJECT(GameWin));
