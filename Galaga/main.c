@@ -22,7 +22,31 @@
 /*Librerias*/
 #include <stdlib.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <stdio.h>
+
+/*Pureba para eventos de teclas*/
+gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  switch (event->keyval)
+  {
+    case GDK_Right:
+      printf("key pressed: %s\n", "Right");
+      break;
+    case GDK_Left:
+      printf("key pressed: %s\n", "Left");
+      break;
+    case GDK_space:
+      printf("key pressed: %s\n", "Space");
+      break;
+    default:
+      return FALSE;
+  }
+
+  return FALSE;
+}
+
+/*Pureba para eventos de teclas*/
 
 /*Callback del boton que inicia la ventana del juego*/
 static void
@@ -54,9 +78,14 @@ start_game (GtkWidget *widget,
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
         G_CALLBACK(gtk_main_quit), G_OBJECT(GameWin));
 
+    g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), NULL);
+
 /*Mostrar la ventana*/
   gtk_widget_show_all(GameWin);
 }
+
+
+
 
 
 int main( int argc, char *argv[])
