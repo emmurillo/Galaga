@@ -1,3 +1,4 @@
+/*Hola anamari*/
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
