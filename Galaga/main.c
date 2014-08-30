@@ -18,7 +18,7 @@
     Emma
     Anamari
 */
-
+//TEC
 /*Librerias*/
 #include <stdlib.h>
 #include <gtk/gtk.h>
