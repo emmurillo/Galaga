@@ -24,7 +24,7 @@ start_game (GtkWidget *widget,
   gtk_container_add(GTK_CONTAINER(GameWin), GameBox);
 
   PlaneImg = gtk_image_new_from_file("src/plane.png");
-  gtk_container_add(GTK_CONTAINER(GameBox), PlaneImg);
+
   gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,300,300);
 
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
