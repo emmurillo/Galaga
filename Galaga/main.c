@@ -7,7 +7,7 @@
 ╚═╝╚═╝╚═╝╚═╝ ╚═════╝╚═╝╚═╝  ╚═╝╚═╝
 
 
-██████╗  █████╗ ██╗      █████╗  ██████╗  █████╗
+ ██████╗  █████╗ ██╗      █████╗  ██████╗  █████╗
 ██╔════╝ ██╔══██╗██║     ██╔══██╗██╔════╝ ██╔══██╗
 ██║  ███╗███████║██║     ███████║██║  ███╗███████║
 ██║   ██║██╔══██║██║     ██╔══██║██║   ██║██╔══██║
@@ -26,6 +26,15 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <stdio.h>
+
+
+
+void configure_callback(GtkWindow *window, GdkEvent *event, gpointer data)
+{
+    int x = event->configure.x;
+    int y = event->configure.y;
+    gtk_widget_set_uposition(GTK_WIDGET(data), x+220, y);
+}
 
 /*Pureba para eventos de teclas*/
 gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -47,6 +56,7 @@ gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data
 
   return FALSE;
 }
+
 
 /*Pureba para eventos de teclas*/
 
@@ -79,6 +89,7 @@ start_game (GtkWidget *widget,
 /*Boton de salir*/
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
         G_CALLBACK(gtk_main_quit), G_OBJECT(GameWin));
+
 
 /*Event handler del teclado*/
     g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), NULL);
