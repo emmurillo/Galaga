@@ -27,25 +27,36 @@
 #include <gdk/gdkkeysyms.h>
 #include <stdio.h>
 
+/*Variables Globales*/
+int x=0;
+int y=0;
+
+/*Struct para paso de parámetros para mover la nave*/
+typedef struct {
+    GtkWidget *Imagen;
+    GtkFixed *Panel;
+} Data;
 
 
-void configure_callback(GtkWindow *window, GdkEvent *event, gpointer data)
-{
-    int x = event->configure.x;
-    int y = event->configure.y;
-    gtk_widget_set_uposition(GTK_WIDGET(data), x+220, y);
-}
 
 /*Pureba para eventos de teclas*/
 gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
+Data *params;
+params=(Data*)user_data;
   switch (event->keyval)
   {/*Impresion de las teclas que se estan presionando*/
     case GDK_Right:
-      printf("key pressed: %s\n", "Right");
+      if(x<550){
+        x+=10;
+        gtk_fixed_move(params->Panel,params->Imagen,x,y);
+        }
       break;
     case GDK_Left:
-      printf("key pressed: %s\n", "Left");
+      if(x>25){
+        x-=10;
+        gtk_fixed_move(params->Panel,params->Imagen,x,y);
+        }
       break;
     case GDK_space:
       printf("key pressed: %s\n", "Space");
@@ -61,15 +72,14 @@ gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data
 /*Pureba para eventos de teclas*/
 
 /*Callback del boton que inicia la ventana del juego*/
-static void
-start_game (GtkWidget *widget,
-             gpointer   data)
+static void start_game (GtkWidget *widget, gpointer   data)
 {
 
 /*Widgets de la ventana de juego*/
   GtkWidget *GameWin;
   GtkWidget *GameBox;/*Panel para dibujar*/
   GtkWidget *PlaneImg;/*Imagen del avion*/
+  Data * params;/*Struct para pasar parametros*/
 
 /*Creación y configuración de la ventana*/
   GameWin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -84,15 +94,21 @@ start_game (GtkWidget *widget,
 
 /*Declaración de la imagen del avion*/
   PlaneImg = gtk_image_new_from_file("src/plane.png");
-  gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,300,300);
+  x=300;
+  y=350;
+  gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,x,y);
 
 /*Boton de salir*/
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
         G_CALLBACK(gtk_main_quit), G_OBJECT(GameWin));
 
-
+Data *parametros;
+parametros=malloc(sizeof(Data));
+parametros->Panel=GameBox;
+parametros->Imagen=PlaneImg;
 /*Event handler del teclado*/
-    g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), NULL);
+    g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), parametros);
+
 
 /*Mostrar la ventana*/
   gtk_widget_show_all(GameWin);
