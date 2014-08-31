@@ -26,17 +26,17 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <stdio.h>
+#include "Headers/Estructuras.h"
+
+/*Macros*/
+#define TAM_MOVIMIENTO 35 /*Tamaño de movimiento de la nave*/
+/*Margenes de la ventana*/
+#define MIN_VENTANA 30
+#define MAX_VENTANA 530
 
 /*Variables Globales*/
-int x=0;
-int y=0;
-
-/*Struct para paso de parámetros para mover la nave*/
-typedef struct {
-    GtkWidget *Imagen;
-    GtkFixed *Panel;
-} Data;
-
+int posX;
+int posY;
 
 
 /*Pureba para eventos de teclas*/
@@ -47,15 +47,15 @@ params=(Data*)user_data;
   switch (event->keyval)
   {/*Impresion de las teclas que se estan presionando*/
     case GDK_Right:
-      if(x<550){
-        x+=10;
-        gtk_fixed_move(params->Panel,params->Imagen,x,y);
+      if(posX<MAX_VENTANA){
+        (posX)+=TAM_MOVIMIENTO;
+        gtk_fixed_move(params->Panel,(params->Image),(posX),(posY));
         }
       break;
     case GDK_Left:
-      if(x>25){
-        x-=10;
-        gtk_fixed_move(params->Panel,params->Imagen,x,y);
+      if((posX)>MIN_VENTANA){
+        (posX)-=TAM_MOVIMIENTO;
+        gtk_fixed_move(params->Panel,(params->Image),(posX),(posY));
         }
       break;
     case GDK_space:
@@ -78,7 +78,7 @@ static void start_game (GtkWidget *widget, gpointer   data)
 /*Widgets de la ventana de juego*/
   GtkWidget *GameWin;
   GtkWidget *GameBox;/*Panel para dibujar*/
-  GtkWidget *PlaneImg;/*Imagen del avion*/
+  GtkWidget *PlaneImg;
   Data * params;/*Struct para pasar parametros*/
 
 /*Creación y configuración de la ventana*/
@@ -94,20 +94,20 @@ static void start_game (GtkWidget *widget, gpointer   data)
 
 /*Declaración de la imagen del avion*/
   PlaneImg = gtk_image_new_from_file("src/plane.png");
-  x=300;
-  y=350;
-  gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,x,y);
+  posX=300;
+  posY=350;
+  gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,posX,posY);
 
 /*Boton de salir*/
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
         G_CALLBACK(gtk_main_quit), G_OBJECT(GameWin));
 
-Data *parametros;
-parametros=malloc(sizeof(Data));
-parametros->Panel=GameBox;
-parametros->Imagen=PlaneImg;
+/*Inicialización de los parámetros*/
+params=malloc(sizeof(Data));
+params->Panel=GameBox;
+params->Image=PlaneImg;
 /*Event handler del teclado*/
-    g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), parametros);
+    g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), params);
 
 
 /*Mostrar la ventana*/
