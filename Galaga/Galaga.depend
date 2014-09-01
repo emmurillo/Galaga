@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1409490095 source:/home/emmanuel/Documentos/Galaga/Galaga/main.c
+1409490858 source:/home/emmanuel/Documentos/Galaga/Galaga/main.c
 	<stdlib.h>
 	<gtk/gtk.h>
 	<gdk/gdkkeysyms.h>
@@ -3701,6 +3701,6 @@
 
 1399912908 /usr/include/gtk-2.0/gdk/gdkkeysyms-compat.h
 
-1409489886 /home/emmanuel/Documentos/Galaga/Galaga/Headers/Estructuras.h
+1409490449 /home/emmanuel/Documentos/Galaga/Galaga/Headers/Estructuras.h
 	<gtk/gtk.h>
 
