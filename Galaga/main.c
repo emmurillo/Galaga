@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <stdio.h>
+#include <time.h>
 #include "Headers/Estructuras.h"
 
 /*Macros*/
@@ -49,17 +50,20 @@ params=(Data*)user_data;
     case GDK_Right:
       if(posX<MAX_VENTANA){
         (posX)+=TAM_MOVIMIENTO;
-        gtk_fixed_move(params->Panel,(params->Image),(posX),(posY));
+        gtk_fixed_move( GTK_FIXED (params->Panel),GTK_WIDGET (params->Nave),(posX),(posY));
         }
       break;
     case GDK_Left:
       if((posX)>MIN_VENTANA){
         (posX)-=TAM_MOVIMIENTO;
-        gtk_fixed_move(params->Panel,(params->Image),(posX),(posY));
+        gtk_fixed_move( GTK_FIXED (params->Panel),GTK_WIDGET (params->Nave),(posX),(posY));
         }
       break;
     case GDK_space:
       printf("key pressed: %s\n", "Space");
+      gtk_fixed_move( GTK_FIXED (params->Panel),GTK_WIDGET (params->Nave),(posX),(posY-20));
+      sleep(1);
+      gtk_fixed_move( GTK_FIXED (params->Panel),GTK_WIDGET (params->Nave),(posX),(posY-100));
       break;
     default:
       return FALSE;
@@ -79,6 +83,7 @@ static void start_game (GtkWidget *widget, gpointer   data)
   GtkWidget *GameWin;
   GtkWidget *GameBox;/*Panel para dibujar*/
   GtkWidget *PlaneImg;
+  GtkWidget *BalaImg;
   Data * params;/*Struct para pasar parametros*/
 
 /*Creación y configuración de la ventana*/
@@ -94,9 +99,11 @@ static void start_game (GtkWidget *widget, gpointer   data)
 
 /*Declaración de la imagen del avion*/
   PlaneImg = gtk_image_new_from_file("src/plane.png");
-  posX=300;
-  posY=350;
   gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,posX,posY);
+
+/*Imagen de la bala*/
+    BalaImg = gtk_image_new_from_file("src/Bala.png");
+    gtk_fixed_put (GTK_FIXED (GameBox), BalaImg,-100,-100);
 
 /*Boton de salir*/
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
@@ -105,7 +112,9 @@ static void start_game (GtkWidget *widget, gpointer   data)
 /*Inicialización de los parámetros*/
 params=malloc(sizeof(Data));
 params->Panel=GameBox;
-params->Image=PlaneImg;
+params->Nave=PlaneImg;
+params->Bala=BalaImg;
+
 /*Event handler del teclado*/
     g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), params);
 
@@ -132,6 +141,8 @@ int main( int argc, char *argv[])
 
 /*Inicialización de GTK*/
   gtk_init(&argc, &argv);
+  posX=300;
+  posY=350;
 
 /*Creación y configuración de la ventana*/
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);

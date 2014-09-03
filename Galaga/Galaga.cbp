@@ -30,10 +30,10 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="`pkg-config --libs --cflags gtk+-2.0`" />
+			<Add option="`pkg-config --cflags gtk+-2.0`" />
 		</Compiler>
 		<Linker>
-			<Add option="`pkg-config --libs --cflags gtk+-2.0`" />
+			<Add option="`pkg-config --libs gtk+-2.0`" />
 		</Linker>
 		<Unit filename="Headers/Estructuras.h" />
 		<Unit filename="main.c">
