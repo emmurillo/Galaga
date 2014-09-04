@@ -61,7 +61,7 @@ params=(Data*)user_data;
       break;
     case GDK_space:
       printf("key pressed: %s\n", "Space");
-      gtk_fixed_move ( GTK_FIXED (params->Panel),GTK_WIDGET (params->Bala),(posX),(posY-20));
+      gtk_fixed_move ( GTK_FIXED (params->Panel),GTK_WIDGET (params->Bala),(posX+6),(posY-16));
       break;
     default:
       return FALSE;
