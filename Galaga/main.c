@@ -38,15 +38,56 @@
 /*Variables Globales*/
 int posX;
 int posY;
+pthread_mutex_t mut;
 
 
-/*Pureba para eventos de teclas*/
+void delay(){
+    int i=0;
+    for(i;i<5000000;i++);
+}
+
+void lock(){
+    pthread_mutex_lock(&mut);
+}
+
+void unlock(){
+    pthread_mutex_unlock(&mut);
+}
+
+/*Redibuja un widget*/
+static gboolean refrescar(GtkWidget *widget)
+{
+    gtk_widget_queue_draw(widget);
+    return TRUE;
+}
+
+void *disparar(void *datos){
+/*Imagen de la bala*/
+    Data *data = (Data*)datos;
+    GtkImage *BalaImg;
+    BalaImg = gtk_image_new_from_file("src/Bala.png");
+    gtk_fixed_put (GTK_FIXED (data->Panel), BalaImg, data->xAct, data->yAct);
+    int yBala = data->yAct;
+    do{
+        lock();
+         printf("%d\n",yBala);
+         gtk_fixed_move ( GTK_FIXED (data->Panel),GTK_WIDGET (BalaImg),(data->xAct+6),(yBala-20));
+         delay();
+         yBala-=20;
+         unlock();
+    }
+    while (yBala >= 10);
+    gtk_widget_destroy(BalaImg);
+    pthread_exit(0);
+}
+
+/*Funcion para los eventos de las teclas*/
 gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
 Data *params;
 params=(Data*)user_data;
   switch (event->keyval)
-  {/*Impresion de las teclas que se estan presionando*/
+  {
     case GDK_Right:
       if(posX<MAX_VENTANA){
         (posX)+=TAM_MOVIMIENTO;
@@ -60,8 +101,11 @@ params=(Data*)user_data;
         }
       break;
     case GDK_space:
-      printf("key pressed: %s\n", "Space");
-      gtk_fixed_move ( GTK_FIXED (params->Panel),GTK_WIDGET (params->Bala),(posX+6),(posY-16));
+        params->disparar= malloc(sizeof(pthread_t));
+        printf("Espacio\n");
+        params->xAct=posX;
+        params->yAct=posY;
+        pthread_create((params->disparar),NULL,disparar,params);
       break;
     default:
       return FALSE;
@@ -71,8 +115,6 @@ params=(Data*)user_data;
 }
 
 
-/*Pureba para eventos de teclas*/
-
 /*Callback del boton que inicia la ventana del juego*/
 static void start_game (GtkWidget *widget, gpointer   data)
 {
@@ -81,7 +123,6 @@ static void start_game (GtkWidget *widget, gpointer   data)
   GtkWidget *GameWin;
   GtkWidget *GameBox;/*Panel para dibujar*/
   GtkWidget *PlaneImg;
-  GtkWidget *BalaImg;
   Data * params;/*Struct para pasar parametros*/
 
 /*Creación y configuración de la ventana*/
@@ -99,9 +140,6 @@ static void start_game (GtkWidget *widget, gpointer   data)
   PlaneImg = gtk_image_new_from_file("src/plane.png");
   gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,posX,posY);
 
-/*Imagen de la bala*/
-    BalaImg = gtk_image_new_from_file("src/Bala.png");
-    gtk_fixed_put (GTK_FIXED (GameBox), BalaImg,-100,-100);
 
 /*Boton de salir*/
   g_signal_connect_swapped(G_OBJECT(GameWin), "destroy",
@@ -111,22 +149,25 @@ static void start_game (GtkWidget *widget, gpointer   data)
 params=malloc(sizeof(Data));
 params->Panel=GameBox;
 params->Nave=PlaneImg;
-params->Bala=BalaImg;
+/*params->Bala=BalaImg;*/
 
 /*Event handler del teclado*/
     g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), params);
 
 
 /*Mostrar la ventana*/
-  gtk_widget_show_all(GameWin);
+gtk_widget_show_all(GameWin);
+
 }
 
 
 
 
 
-int main( int argc, char *argv[])
+int main( int argc, char *_argv[])
 {
+
+
 
 /*Widgets del menú de inicio*/
   GtkWidget *window;
@@ -138,7 +179,7 @@ int main( int argc, char *argv[])
   GtkWidget *close;
 
 /*Inicialización de GTK*/
-  gtk_init(&argc, &argv);
+  gtk_init(&argc, &_argv);
   posX=300;
   posY=350;
 
