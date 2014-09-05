@@ -1,10 +1,11 @@
 # depslib dependency file v1.0
-1409796392 source:/home/emmanuel/Documentos/Galaga/Galaga/main.c
+1409879864 source:/home/emmanuel/Documentos/Galaga/Galaga/main.c
 	<stdlib.h>
 	<gtk/gtk.h>
 	<gdk/gdkkeysyms.h>
 	<stdio.h>
 	<time.h>
+	<pthread.h>
 	"Headers/Estructuras.h"
 
 1399912912 /usr/include/gtk-2.0/gtk/gtk.h
@@ -3702,6 +3703,6 @@
 
 1399912908 /usr/include/gtk-2.0/gdk/gdkkeysyms-compat.h
 
-1409769596 /home/emmanuel/Documentos/Galaga/Galaga/Headers/Estructuras.h
+1409875218 /home/emmanuel/Documentos/Galaga/Galaga/Headers/Estructuras.h
 	<gtk/gtk.h>
 

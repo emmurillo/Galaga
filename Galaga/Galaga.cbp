@@ -34,6 +34,7 @@
 		</Compiler>
 		<Linker>
 			<Add option="`pkg-config --libs gtk+-2.0`" />
+			<Add library="pthread" />
 		</Linker>
 		<Unit filename="Headers/Estructuras.h" />
 		<Unit filename="main.c">

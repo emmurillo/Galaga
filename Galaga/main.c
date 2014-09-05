@@ -27,6 +27,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <stdio.h>
 #include <time.h>
+#include <pthread.h>
 #include "Headers/Estructuras.h"
 
 /*Macros*/
