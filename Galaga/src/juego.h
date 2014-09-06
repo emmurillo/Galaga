@@ -1,4 +1,5 @@
-#include <gtk/gtk.h>
+#ifndef JUEGO_H_INCLUDED
+#define JUEGO_H_INCLUDED
 
 /*Struct para paso de parámetros para mover la nave*/
 typedef struct {
@@ -9,4 +10,8 @@ typedef struct {
     pthread_t *disparar;
     int xAct;
     int yAct;
-} Data;
+} Datos;
+
+void dibujarPantalla(int *argc,char **argv[]);
+
+#endif // JUEGO_H_INCLUDED

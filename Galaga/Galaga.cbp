@@ -36,9 +36,15 @@
 			<Add option="`pkg-config --libs gtk+-2.0`" />
 			<Add library="pthread" />
 		</Linker>
-		<Unit filename="Headers/Estructuras.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/juego.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+		</Unit>
+		<Unit filename="src/juego.h">
+			<Option target="Debug" />
 		</Unit>
 		<Extensions>
 			<code_completion />
