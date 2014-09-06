@@ -1,5 +1,7 @@
 *.depend
 *.layout
+Galaga/*.depend
+Galaga/*.layout
 
 bin/
 obj/
