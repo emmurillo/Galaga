@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 #include <pthread.h>
 #include "juego.h"
 
@@ -11,9 +12,21 @@
 /*Margenes de la ventana*/
 #define MIN_VENTANA 30
 #define MAX_VENTANA 530
+#define CANT_HILOS 5
 
 int posX=300;
 int posY=350;
+pthread_mutex_t mut;
+pthread_t hilo[CANT_HILOS];
+
+
+void lock(){
+    pthread_mutex_lock(&mut);
+}
+
+void unlock(){
+    pthread_mutex_unlock(&mut);
+}
 
 
 /*Funcion para los eventos de las teclas*/
@@ -36,10 +49,19 @@ params=(Datos*)user_data;
         }
       break;
     case GDK_space:
-        params->disparar= malloc(sizeof(pthread_t));
-        printf("Espacio\n");
-        params->xAct=posX;
-        params->yAct=posY;
+        printf("Disparo\n");
+        GtkImage *bala=gtk_image_new_from_file("img/Bala.png");
+        int xAct=posX+3;
+        int yAct=posY-20;
+        gtk_fixed_put((params->Panel), bala, xAct,yAct);
+        do{
+                gtk_widget_show_now(bala);
+                usleep(1000);
+                gtk_fixed_move((params->Panel), bala, xAct,yAct);
+                usleep(10000);
+                gtk_widget_show_now(bala);
+                yAct-=20;
+        } while(yAct>0);
       break;
     default:
       return FALSE;
@@ -48,6 +70,12 @@ params=(Datos*)user_data;
   return FALSE;
 }
 
+void *dibujar(void *_datos){
+    GtkWindow *vent;
+    vent = (GtkWindow*)_datos;
+    /*Mostrar la ventana*/
+  gtk_widget_show_all(vent);
+}
 
 void dibujarPantalla(int* argc,char **argv[]){
 
@@ -57,7 +85,7 @@ void dibujarPantalla(int* argc,char **argv[]){
 /*Widgets de la ventana de juego*/
   GtkWidget *GameWin;
   GtkWidget *GameBox;/*Panel para dibujar*/
-  GtkWidget *PlaneImg;
+  GtkWidget *Nave;
   Datos * params;/*Struct para pasar parametros*/
 
 /*Creación y configuración de la ventana*/
@@ -72,8 +100,8 @@ void dibujarPantalla(int* argc,char **argv[]){
   gtk_container_add(GTK_CONTAINER(GameWin), GameBox);
 
 /*Declaración de la imagen del avion*/
-  PlaneImg = gtk_image_new_from_file("img/plane.png");
-  gtk_fixed_put (GTK_FIXED (GameBox), PlaneImg,posX,posY);
+  Nave = gtk_image_new_from_file("img/plane.png");
+  gtk_fixed_put (GTK_FIXED (GameBox), Nave,posX,posY);
 
 
 /*Boton de salir*/
@@ -83,16 +111,15 @@ void dibujarPantalla(int* argc,char **argv[]){
 /*Inicialización de los parámetros*/
 params=malloc(sizeof(Datos));
 params->Panel=GameBox;
-params->Nave=PlaneImg;
+params->Nave=Nave;
 /*params->Bala=BalaImg;*/
 
 /*Event handler del teclado*/
     g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), params);
 
-/*Mostrar la ventana*/
-  gtk_widget_show_all(GameWin);
+    hilo[0] = malloc(sizeof(pthread_t));
+    pthread_create(hilo[0], NULL, dibujar, GameWin);
+    sleep(1);
 
-/*Ciclo del programa*/
   gtk_main();
-
 }

@@ -3708,12 +3708,13 @@
 
 1410028126 /home/emmanuel/Documentos/Galaga/Galaga/src/juego.h
 
-1410028223 source:/home/emmanuel/Documentos/Galaga/Galaga/src/juego.c
+1410033941 source:/home/emmanuel/Documentos/Galaga/Galaga/src/juego.c
 	<stdlib.h>
 	<gdk/gdkkeysyms.h>
 	<gtk/gtk.h>
 	<stdio.h>
 	<time.h>
+	<unistd.h>
 	<pthread.h>
 	"juego.h"
 
