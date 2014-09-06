@@ -8,16 +8,32 @@
 #include "juego.h"
 
 /*Macros*/
-#define TAM_MOVIMIENTO 35 /*Tamaño de movimiento de la nave*/
+#define TAM_MOVIMIENTO 30 /*Tamaño de movimiento de la nave*/
 /*Margenes de la ventana*/
 #define MIN_VENTANA 30
-#define MAX_VENTANA 530
+#define MAX_VENTANA 630
 #define CANT_HILOS 5
+/*Cantidad de marcianos*/
+#define CANT_BOSS 4
+#define CANT_MEDIO 8
+#define CANT_BAJO 10
+/*Filas en la formación*/
+#define FILA_SUPERIOR 50
+#define COLUMNA_BOSS 240
+#define FILA_MEDIO 100
+#define COLUMNA_MEDIA 120
+#define FILA_BAJA 150
+#define COLUMNA_BAJO 60
 
 int posX=300;
 int posY=350;
 pthread_mutex_t mut;
 pthread_t hilo[CANT_HILOS];
+
+  /*Arreglos de marcianos*/
+  GtkWidget* Boss[CANT_BOSS];
+  GtkWidget* Medio[CANT_BAJO];
+  GtkWidget* Bajo[CANT_BAJO];
 
 
 void lock(){
@@ -30,7 +46,7 @@ void unlock(){
 
 
 /*Funcion para los eventos de las teclas*/
-gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+gboolean evento_tecla (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
 Datos *params;
 params=(Datos*)user_data;
@@ -56,12 +72,11 @@ params=(Datos*)user_data;
         gtk_fixed_put((params->Panel), bala, xAct,yAct);
         do{
                 gtk_widget_show_now(bala);
-                usleep(1000);
-                gtk_fixed_move((params->Panel), bala, xAct,yAct);
+                gtk_fixed_move((params->Panel), GTK_WIDGET(bala), xAct,yAct);
                 usleep(10000);
-                gtk_widget_show_now(bala);
                 yAct-=20;
         } while(yAct>0);
+        gtk_widget_set_redraw_on_allocate(params->Panel,FALSE);
       break;
     default:
       return FALSE;
@@ -86,22 +101,58 @@ void dibujarPantalla(int* argc,char **argv[]){
   GtkWidget *GameWin;
   GtkWidget *GameBox;/*Panel para dibujar*/
   GtkWidget *Nave;
+
+  /*Imagen de fondo */
+  GdkPixbufAnimation* anim=gdk_pixbuf_animation_new_from_file("img/bg.jpg",NULL);
+  GtkImage* fondo= gtk_image_new_from_animation(anim);
+
+
   Datos * params;/*Struct para pasar parametros*/
 
 /*Creación y configuración de la ventana*/
   GameWin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_position(GTK_WINDOW(GameWin), GTK_WIN_POS_CENTER);
-  gtk_window_set_default_size(GTK_WINDOW(GameWin), 600, 400);
+  gtk_window_set_default_size(GTK_WINDOW(GameWin), MAX_VENTANA+60, 400);
   gtk_window_set_title(GTK_WINDOW(GameWin), "Galaga");
   gtk_container_set_border_width(GTK_CONTAINER(GameWin), 2);
 
 /*Fixed para mover las imagenes*/
   GameBox = gtk_fixed_new();
   gtk_container_add(GTK_CONTAINER(GameWin), GameBox);
+  gtk_fixed_put(GameBox,fondo,0,0);
 
 /*Declaración de la imagen del avion*/
   Nave = gtk_image_new_from_file("img/plane.png");
   gtk_fixed_put (GTK_FIXED (GameBox), Nave,posX,posY);
+
+/*Declaración de la imagen del boss*/
+int bossCont=0;
+int xBoss=COLUMNA_BOSS;
+for(bossCont; bossCont < CANT_BOSS; bossCont++){
+            Boss[bossCont] = gtk_image_new_from_file("img/superior.png");
+            gtk_fixed_put (GTK_FIXED (GameBox), Boss[bossCont], xBoss, FILA_SUPERIOR);
+            xBoss+=60;
+}
+
+/*Declaración de la imagen de los marcianos del medio*/
+int medioCont=0;
+int xMedio=COLUMNA_MEDIA;
+for(medioCont; medioCont < CANT_MEDIO; medioCont++){
+            Medio[medioCont] = gtk_image_new_from_file("img/medio.png");
+            gtk_fixed_put (GTK_FIXED (GameBox), Medio[medioCont], xMedio, FILA_MEDIO);
+            xMedio+=60;
+}
+
+/*Declaración de la imagen de los marcianos de abajo*/
+int bajoCont=0;
+int xBajo=COLUMNA_BAJO;
+for(bajoCont; bajoCont < CANT_BAJO; bajoCont++){
+            Bajo[bajoCont] = gtk_image_new_from_file("img/bajo.png");
+            gtk_fixed_put (GTK_FIXED (GameBox), Bajo[bajoCont], xBajo, FILA_BAJA);
+            xBajo+=60;
+}
+
+
 
 
 /*Boton de salir*/
@@ -115,11 +166,13 @@ params->Nave=Nave;
 /*params->Bala=BalaImg;*/
 
 /*Event handler del teclado*/
-    g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (on_key_press), params);
+    g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (evento_tecla), params);
 
     hilo[0] = malloc(sizeof(pthread_t));
     pthread_create(hilo[0], NULL, dibujar, GameWin);
     sleep(1);
 
+
   gtk_main();
+
 }
