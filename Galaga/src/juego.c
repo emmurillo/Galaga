@@ -90,6 +90,7 @@ void *dibujar(void *_datos){
     vent = (GtkWindow*)_datos;
     /*Mostrar la ventana*/
   gtk_widget_show_all(vent);
+
 }
 
 void dibujarPantalla(int* argc,char **argv[]){
@@ -170,9 +171,8 @@ params->Nave=Nave;
 
     hilo[0] = malloc(sizeof(pthread_t));
     pthread_create(hilo[0], NULL, dibujar, GameWin);
-    sleep(1);
+    gtk_main();
 
 
-  gtk_main();
 
 }
