@@ -25,6 +25,8 @@
 #define FILA_BAJA 150
 #define COLUMNA_BAJO 60
 
+
+int flag=0;
 int posX=300;
 int posY=350;
 pthread_mutex_t mut;
@@ -44,6 +46,16 @@ void unlock(){
     pthread_mutex_unlock(&mut);
 }
 
+
+void *disp(void *u_data){
+    Datos* params=(Datos*)u_data;
+    lock();
+    gtk_fixed_put(params->Panel,params->Bala,params->xAct,params->yAct);
+    while(1){
+            gtk_widget_show(params->Bala);
+    }
+    unlock();
+}
 
 /*Funcion para los eventos de las teclas*/
 gboolean evento_tecla (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -69,14 +81,12 @@ params=(Datos*)user_data;
         GtkImage *bala=gtk_image_new_from_file("img/Bala.png");
         int xAct=posX+3;
         int yAct=posY-20;
-        gtk_fixed_put((params->Panel), bala, xAct,yAct);
-        do{
-                gtk_widget_show_now(bala);
-                gtk_fixed_move((params->Panel), GTK_WIDGET(bala), xAct,yAct);
-                usleep(10000);
-                yAct-=20;
-        } while(yAct>0);
-        gtk_widget_set_redraw_on_allocate(params->Panel,FALSE);
+        params->xAct=xAct;
+        params->yAct=yAct;
+        params->Bala=bala;
+        hilo[0]=malloc(sizeof(pthread_t));
+        pthread_create(hilo[0],NULL,disp,params);
+        pthread_join(hilo[0],NULL);
       break;
     default:
       return FALSE;
@@ -162,6 +172,7 @@ for(bajoCont; bajoCont < CANT_BAJO; bajoCont++){
 
 /*Inicialización de los parámetros*/
 params=malloc(sizeof(Datos));
+params->Ventana=GameWin;
 params->Panel=GameBox;
 params->Nave=Nave;
 /*params->Bala=BalaImg;*/
@@ -169,8 +180,9 @@ params->Nave=Nave;
 /*Event handler del teclado*/
     g_signal_connect (G_OBJECT (GameWin), "key_press_event", G_CALLBACK (evento_tecla), params);
 
-    hilo[0] = malloc(sizeof(pthread_t));
-    pthread_create(hilo[0], NULL, dibujar, GameWin);
+    /*hilo[0] = malloc(sizeof(pthread_t));*/
+    /*pthread_create(hilo[0], NULL, dibujar, GameWin);*/
+    gtk_widget_show_all(GameWin);
     gtk_main();
 
 
