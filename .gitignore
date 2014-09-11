@@ -1,5 +1,6 @@
 *.depend
 *.layout
+*.ini
 Galaga/*.depend
 Galaga/*.layout
 
