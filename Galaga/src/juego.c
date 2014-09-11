@@ -1,8 +1,15 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h> ///include the header to initialize the Nave addon
 #include <unistd.h>
+#include <pthread.h>
 #include "juego.h"
 
+
+/*
+Notas:
+- Los Marcianos se llaman Boss , Medio y Bajo
+- Faltan hilos
+*/
 
 /*Macros*/
 #define TAM_MOVIMIENTO 30 /*Tamaño de movimiento de la nave*/
@@ -23,10 +30,18 @@
 #define COLUMNA_BAJO 60
 
 DatosGlobales * JuegoDatos;
+
+///Elementos gráficos
  ALLEGRO_DISPLAY *Pantalla;
 ALLEGRO_EVENT_QUEUE *EventQueue;
 ALLEGRO_EVENT Event;
 
+///Marcianos
+BossG BossArray[CANT_BOSS];     ///Arreglo con los Boss Galaga
+MedioG MedioArray[CANT_MEDIO];     ///Arreglo con los marcianos del medio
+
+
+/// Refresca la pantalla dibujando el BackGround
 void refrescar(DatosGlobales * datos){
 
     al_draw_bitmap(datos->BG, 0, 0, 0);
@@ -34,13 +49,61 @@ void refrescar(DatosGlobales * datos){
 
 }
 
+///Dibuja la nave, segun las posiciones que tenga en el momento de llamar al metodo
 void dibujarNave( DatosGlobales * datos){
-///Dibujar la nave segun los ultimos datos pasados
     al_draw_bitmap((datos->Nave->Nave), (datos->Nave->xNave), (datos->Nave->yNave), 0);
     al_flip_display();
 
 }
 
+
+///Inicializa los Marcianos
+void IniciarMarcianos(){
+    int i=0;
+    int dist = 60;      /// Distancia entre los marcianos
+
+///         BOSS
+    int xInicial = COLUMNA_BOSS;    ///Coordenadas del Boss mas a la izquierda en la formación fija
+    int yInicial = FILA_SUPERIOR;
+    for(i; i<CANT_BOSS;i++){ ///Inicialización
+            BossArray[i].BossImg = al_load_bitmap("img/superior.png");
+            BossArray[i].xBoss = xInicial;
+            BossArray[i].yBoss = yInicial;
+            BossArray[i].visible = true;
+            xInicial+=dist;
+    }
+
+///         MEDIOS
+    i=0;
+    xInicial = COLUMNA_MEDIA;    ///Coordenadas del Boss mas a la izquierda en la formación fija
+    yInicial = FILA_MEDIO;
+    for(i; i<CANT_MEDIO;i++){ ///Inicialización
+            MedioArray[i].MedioImg = al_load_bitmap("img/medio.png");
+            MedioArray[i].xMedio = xInicial;
+            MedioArray[i].yMedio = yInicial;
+            MedioArray[i].visible = true;
+            xInicial+=dist;
+    }
+}
+
+///Una vez creados los marcianos los dibuja en pantalla
+/// tomando en cuenta si han sido destruidos
+void DibujarMarcianos(){
+    int i=0;
+    for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
+            if(BossArray[i].visible)    ///Dibuja el arreglo si está visible
+                al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
+            }
+    i=0;
+    for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
+            if(MedioArray[i].visible)    ///Dibuja el arreglo si está visible
+                al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
+            }
+    al_flip_display();
+}
+
+
+/// Mueve la bala según las coordenadas de la nave
 void disparar(DatosGlobales *datos){
     int yActual=datos->Nave->yNave-20;
     int xActual=datos->Nave->xNave+5;
@@ -58,9 +121,6 @@ void disparar(DatosGlobales *datos){
  ///Proceimiento que inicia el juego
 int iniciarJuego()
 {
-
-
-
 ///Iniciar allegro
     al_init();
     al_init_image_addon(); /// Para cargar los bmps
@@ -68,9 +128,6 @@ int iniciarJuego()
 if (!al_install_keyboard()) {
         return 1;
  }
-
-
-
     Pantalla = al_create_display(690, 400);
 
     EventQueue = al_create_event_queue();
@@ -90,6 +147,11 @@ if (!al_install_keyboard()) {
 
     dibujarNave(JuegoDatos);
 
+    IniciarMarcianos();
+    DibujarMarcianos();
+
+
+/// Ciclo principal del juego
     while(JuegoDatos->jugando)
     {
 
@@ -108,7 +170,7 @@ if (!al_install_keyboard()) {
                         dibujarNave(JuegoDatos);
                     }
                     if(Event.keyboard.keycode == ALLEGRO_KEY_SPACE){ ///Movimiento a la derecha
-                        disparar(JuegoDatos);
+                         disparar(JuegoDatos);
                     }
                     break;
             }

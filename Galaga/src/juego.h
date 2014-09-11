@@ -6,6 +6,19 @@ typedef struct {
     ALLEGRO_BITMAP *Nave;
 }Nave;
 
+typedef struct {
+    int xBoss, yBoss;
+    bool herido;    ///Para saber si le han disparado
+    ALLEGRO_BITMAP *BossImg;
+    bool visible;
+}BossG;
+
+typedef struct {
+    int xMedio, yMedio;
+    ALLEGRO_BITMAP *MedioImg;
+    bool visible;
+}MedioG;
+
 ///Struct para paso de parámetros para mover la nave
 typedef struct {
     int jugando;                ///Estado del juego
