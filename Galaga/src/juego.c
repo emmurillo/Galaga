@@ -39,16 +39,22 @@ ALLEGRO_EVENT Event;
 ///Marcianos
 BossG BossArray[CANT_BOSS];     ///Arreglo con los Boss Galaga
 MedioG MedioArray[CANT_MEDIO];     ///Arreglo con los marcianos del medio
+BajoG BajoArray[CANT_BAJO];     ///Arreglo con los marcianos de abajo
+
+
+/// Hilos
+pthread_t *hiloRefrescar;
 
 
 /// Refresca la pantalla dibujando el BackGround
 void refrescar(DatosGlobales * datos){
-
     al_draw_bitmap(datos->BG, 0, 0, 0);
     al_flip_display();
-
 }
 
+void *ref(void *a){
+
+}
 ///Dibuja la nave, segun las posiciones que tenga en el momento de llamar al metodo
 void dibujarNave( DatosGlobales * datos){
     al_draw_bitmap((datos->Nave->Nave), (datos->Nave->xNave), (datos->Nave->yNave), 0);
@@ -84,21 +90,45 @@ void IniciarMarcianos(){
             MedioArray[i].visible = true;
             xInicial+=dist;
     }
+
+///         BAJOS
+    i=0;
+    xInicial = COLUMNA_BAJO;    ///Coordenadas del Boss mas a la izquierda en la formación fija
+    yInicial = FILA_BAJA;
+    for(i; i<CANT_BAJO;i++){ ///Inicialización
+            BajoArray[i].BajoImg = al_load_bitmap("img/bajo.png");
+            BajoArray[i].xBajo = xInicial;
+            BajoArray[i].yBajo = yInicial;
+            BajoArray[i].visible = true;
+            xInicial+=dist;
+    }
 }
 
 ///Una vez creados los marcianos los dibuja en pantalla
 /// tomando en cuenta si han sido destruidos
 void DibujarMarcianos(){
+
+///         BOSS
     int i=0;
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
             }
+
+///         MEDIO
     i=0;
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
             }
+
+///         MEDIO
+    i=0;
+    for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
+            if(BajoArray[i].visible)    ///Dibuja el arreglo si está visible
+                al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
+            }
+
     al_flip_display();
 }
 
@@ -118,9 +148,24 @@ void disparar(DatosGlobales *datos){
     }
 }
 
+
+
+/***
+ *    ██╗███╗    ██╗██╗ ██████╗ ██╗   ██████╗
+ *    ██║████╗   ██║██║ ██╔════╝██║ ██╔═══██╗
+ *    ██║██╔██╗  ██║██║ ██║        ██║ ██║    ██║
+ *    ██║██║╚██╗ ██║██║ ██║        ██║ ██║    ██║
+ *    ██║██║ ╚████ ║██║ ╚██████╗ ██║╚██████╔╝
+ *    ╚═╝╚═╝  ╚═══╝  ╚═╝     ╚═════╝╚═╝       ╚═════╝
+ *
+ */
+
  ///Proceimiento que inicia el juego
 int iniciarJuego()
 {
+    hiloRefrescar = malloc(sizeof(pthread_t*));
+    pthread_create(hiloRefrescar, NULL, ref,NULL);
+    pthread_join(hiloRefrescar,NULL);
 ///Iniciar allegro
     al_init();
     al_init_image_addon(); /// Para cargar los bmps
@@ -149,7 +194,6 @@ if (!al_install_keyboard()) {
 
     IniciarMarcianos();
     DibujarMarcianos();
-
 
 /// Ciclo principal del juego
     while(JuegoDatos->jugando)

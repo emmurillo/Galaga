@@ -19,6 +19,12 @@ typedef struct {
     bool visible;
 }MedioG;
 
+typedef struct {
+    int xBajo, yBajo;
+    ALLEGRO_BITMAP *BajoImg;
+    bool visible;
+}BajoG;
+
 ///Struct para paso de parámetros para mover la nave
 typedef struct {
     int jugando;                ///Estado del juego
