@@ -35,6 +35,8 @@ DatosGlobales * JuegoDatos;
  ALLEGRO_DISPLAY *Pantalla;
 ALLEGRO_EVENT_QUEUE *EventQueue;
 ALLEGRO_EVENT Event;
+const float FPS = 60;
+ALLEGRO_TIMER *timer = NULL;
 
 ///Marcianos
 BossG BossArray[CANT_BOSS];     ///Arreglo con los Boss Galaga
@@ -335,6 +337,11 @@ int iniciarJuego()
 ///Iniciar allegro
     al_init();
     al_init_image_addon(); /// Para cargar los bmps
+
+    timer = al_create_timer(1.0 / FPS);
+   if(!timer) {
+      return -1;
+   }
 
 if (!al_install_keyboard()) {
         return 1;
