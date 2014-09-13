@@ -359,7 +359,7 @@ if (!al_install_keyboard()) {
     JuegoDatos->Nave->xNave=340;
     JuegoDatos->Nave->yNave=350;
     JuegoDatos->jugando = 1;
-    JuegoDatos->BG = al_load_bitmap("img/bg.jpg");
+    JuegoDatos->BG = al_load_bitmap("img/nube.bmp");
 
     refrescar(JuegoDatos);
 
