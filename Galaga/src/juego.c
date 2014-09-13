@@ -372,33 +372,64 @@ if (!al_install_keyboard()) {
 /// Ciclo principal del juego
     while(JuegoDatos->jugando)
     {
-
         al_wait_for_event(EventQueue, &Event);
 
-        switch(Event.type){
-            case ALLEGRO_EVENT_KEY_DOWN:{
-                    if(Event.keyboard.keycode == ALLEGRO_KEY_RIGHT){ ///Movimiento a la izquierda
-                        JuegoDatos->Nave->xNave+=20;
-                        refrescar(JuegoDatos);
-                        dibujarNave(JuegoDatos);
-                        IzquierdaMarcianos();
-                    }
-                    if(Event.keyboard.keycode == ALLEGRO_KEY_LEFT){ ///Movimiento a la derecha
-                        JuegoDatos->Nave->xNave-=20;
-                        refrescar(JuegoDatos);
-                        dibujarNave(JuegoDatos);
-                        DerechaMarcianos();
-                    }
-                    if(Event.keyboard.keycode == ALLEGRO_KEY_SPACE){ ///Movimiento a la derecha
-                         disparar(JuegoDatos);
-                    }
+        if(Event.type == ALLEGRO_EVENT_KEY_DOWN)
+            {
+                switch(Event.keyboard.keycode)
+                {
+                case ALLEGRO_KEY_UP:
+
                     break;
-            }
-            case ALLEGRO_EVENT_DISPLAY_CLOSE:{  ///Cerrar la ventana
-                    JuegoDatos->jugando =  0;
+                case ALLEGRO_KEY_DOWN:
+
                     break;
+                case ALLEGRO_KEY_LEFT:
+                    JuegoDatos->Nave->xNave-=20;
+                    refrescar(JuegoDatos);
+                    dibujarNave(JuegoDatos);
+                    DerechaMarcianos();
+                    break;
+                case ALLEGRO_KEY_RIGHT:
+                    JuegoDatos->Nave->xNave+=20;
+                    refrescar(JuegoDatos);
+                    dibujarNave(JuegoDatos);
+                    IzquierdaMarcianos();
+                    break;
+
+                case ALLEGRO_KEY_SPACE:
+                    disparar(JuegoDatos);
+                    break;
+                }
             }
-        }
+            else if(Event.type == ALLEGRO_EVENT_KEY_UP)
+		{
+			switch(Event.keyboard.keycode)
+			{
+				case ALLEGRO_KEY_UP:
+
+					break;
+				case ALLEGRO_KEY_DOWN:
+
+					break;
+				case ALLEGRO_KEY_RIGHT:
+					JuegoDatos->Nave->xNave+=20;
+                    refrescar(JuegoDatos);
+                    dibujarNave(JuegoDatos);
+                    IzquierdaMarcianos();
+					break;
+				case ALLEGRO_KEY_LEFT:
+					JuegoDatos->Nave->xNave-=20;
+                    refrescar(JuegoDatos);
+                    dibujarNave(JuegoDatos);
+                    DerechaMarcianos();
+					break;
+				case ALLEGRO_KEY_SPACE:
+
+					break;
+
+			}
+		}
 
     }
 
