@@ -161,7 +161,7 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     int i=0;
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
-                BossArray[i].xBoss += 30;
+                BossArray[i].xBoss += TAM_MOVIMIENTO;
                 al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
@@ -170,7 +170,7 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     i=0;
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
-                MedioArray[i].xMedio += 30;
+                MedioArray[i].xMedio += TAM_MOVIMIENTO;
                 al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
@@ -179,7 +179,7 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
-                BajoArray[i].xBajo += 30;
+                BajoArray[i].xBajo += TAM_MOVIMIENTO;
                 al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
@@ -200,7 +200,7 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     int i=0;
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
-                BossArray[i].xBoss -= 30;
+                BossArray[i].xBoss -= TAM_MOVIMIENTO;
                 al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
@@ -209,7 +209,7 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     i=0;
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
-                MedioArray[i].xMedio -= 30;
+                MedioArray[i].xMedio -= TAM_MOVIMIENTO;
                 al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
@@ -218,7 +218,7 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
-                BajoArray[i].xBajo -= 30;
+                BajoArray[i].xBajo -= TAM_MOVIMIENTO;
                 al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
@@ -238,7 +238,7 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     int i=0;
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
-                BossArray[i].yBoss -= 30;
+                BossArray[i].yBoss -= TAM_MOVIMIENTO;
                 al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
@@ -247,7 +247,7 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     i=0;
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
-                MedioArray[i].yMedio -= 30;
+                MedioArray[i].yMedio -= TAM_MOVIMIENTO;
                 al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
@@ -256,7 +256,7 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
-                BajoArray[i].yBajo -= 30;
+                BajoArray[i].yBajo -= TAM_MOVIMIENTO;
                 al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
@@ -277,7 +277,7 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     int i=0;
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
-                BossArray[i].yBoss += 30;
+                BossArray[i].yBoss += TAM_MOVIMIENTO;
                 al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
@@ -286,7 +286,7 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     i=0;
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
-                MedioArray[i].yMedio += 30;
+                MedioArray[i].yMedio += TAM_MOVIMIENTO;
                 al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
@@ -295,7 +295,7 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
-                BajoArray[i].yBajo += 30;
+                BajoArray[i].yBajo += TAM_MOVIMIENTO;
                 al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
@@ -385,13 +385,13 @@ if (!al_install_keyboard()) {
 
                     break;
                 case ALLEGRO_KEY_LEFT:
-                    JuegoDatos->Nave->xNave-=20;
+                    JuegoDatos->Nave->xNave-=TAM_MOVIMIENTO;
                     refrescar(JuegoDatos);
                     dibujarNave(JuegoDatos);
                     DerechaMarcianos();
                     break;
                 case ALLEGRO_KEY_RIGHT:
-                    JuegoDatos->Nave->xNave+=20;
+                    JuegoDatos->Nave->xNave+=TAM_MOVIMIENTO;
                     refrescar(JuegoDatos);
                     dibujarNave(JuegoDatos);
                     IzquierdaMarcianos();
@@ -413,13 +413,13 @@ if (!al_install_keyboard()) {
 
 					break;
 				case ALLEGRO_KEY_RIGHT:
-					JuegoDatos->Nave->xNave+=20;
+					JuegoDatos->Nave->xNave+=TAM_MOVIMIENTO;
                     refrescar(JuegoDatos);
                     dibujarNave(JuegoDatos);
                     IzquierdaMarcianos();
 					break;
 				case ALLEGRO_KEY_LEFT:
-					JuegoDatos->Nave->xNave-=20;
+					JuegoDatos->Nave->xNave-=TAM_MOVIMIENTO;
                     refrescar(JuegoDatos);
                     dibujarNave(JuegoDatos);
                     DerechaMarcianos();
