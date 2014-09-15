@@ -27,7 +27,7 @@ typedef struct {
 
 ///Struct para paso de parámetros para mover la nave
 typedef struct {
-    int jugando;                ///Estado del juego
+    bool jugando;                ///Estado del juego
     ALLEGRO_BITMAP *BG; ///Fondo de pantalla
     Nave *Nave;                     ///Nave principal
 } DatosGlobales;
