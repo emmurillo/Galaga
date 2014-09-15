@@ -33,6 +33,13 @@ Notas:
 #define FILA_BAJA 150
 #define COLUMNA_BAJO 55
 
+
+#define CANT_BALAS 5
+
+/*Velocidades de los marcianos*/
+#define VELOCIDAD_MARCIANOS 0.5
+#define VELOCIDAD_BALA 0.09
+
 #define ARR_BALA_X 14
 #define ARR_BALA_Y 20
 
@@ -51,10 +58,16 @@ BossG BossArray[CANT_BOSS];     ///Arreglo con los Boss Galaga
 MedioG MedioArray[CANT_MEDIO];     ///Arreglo con los marcianos del medio
 BajoG BajoArray[CANT_BAJO];     ///Arreglo con los marcianos de abajo
 
+///Balas
+BalaG *Bala[CANT_BALAS];
+
 
 /// Hilos
 pthread_t *hiloRefrescar;
 pthread_mutex_t *mut;
+ALLEGRO_THREAD * hilo_bala[CANT_BALAS];
+ALLEGRO_THREAD * hilo_animacion;
+ALLEGRO_MUTEX *mutex;
 
 ///Funciones para los hilos
 
@@ -66,6 +79,48 @@ void unlock(){
         pthread_mutex_unlock(mut);
 }
 
+
+
+void *disparar(ALLEGRO_THREAD *thr, void *datos){
+    bool listo;
+    int xBala,yBala, act;
+    act = JuegoDatos->Nave->cont_balas;
+    DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
+    mis_datos = (DatosGlobales*)datos;
+    xBala = (mis_datos->Nave->xNave)+ARR_BALA_X;
+    yBala = mis_datos->Nave->yNave+(ARR_BALA_Y);
+    listo=true;
+    Bala[JuegoDatos->Nave->cont_balas]->disparada = true;
+    while(listo){
+            if(xBala>0){
+                al_rest(VELOCIDAD_BALA);
+                al_lock_mutex(mutex);
+                yBala -= ARR_BALA_Y;
+                Bala[act]->yBala = yBala;
+                Bala[act]->xBala = xBala;
+                al_unlock_mutex(mutex);
+            }
+            else{
+                    listo = false;
+            }
+    }
+}
+
+void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
+    DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
+    mis_datos = (DatosGlobales*)datos;
+    while(1){
+            al_rest(VELOCIDAD_MARCIANOS);
+            DerechaMarcianos();
+            al_rest(VELOCIDAD_MARCIANOS);
+            ArribaMarcianos();
+            al_rest(VELOCIDAD_MARCIANOS);
+            IzquierdaMarcianos();
+            al_rest(VELOCIDAD_MARCIANOS);
+            AbajoMarcianos();
+
+    }
+}
 
 /// Refresca la pantalla dibujando el BackGround
 void refrescar(DatosGlobales * datos){
@@ -162,7 +217,6 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].xBoss += TAM_MOVIMIENTO;
-                al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
 
@@ -171,7 +225,6 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio += TAM_MOVIMIENTO;
-                al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
 
@@ -180,7 +233,6 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo += TAM_MOVIMIENTO;
-                al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
 }
@@ -199,7 +251,6 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].xBoss -= TAM_MOVIMIENTO;
-                al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
 
@@ -208,7 +259,6 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio -= TAM_MOVIMIENTO;
-                al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
 
@@ -217,7 +267,6 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo -= TAM_MOVIMIENTO;
-                al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
 }
@@ -235,7 +284,6 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].yBoss -= TAM_MOVIMIENTO;
-                al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
 
@@ -244,7 +292,6 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].yMedio -= TAM_MOVIMIENTO;
-                al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
 
@@ -253,7 +300,6 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].yBajo -= TAM_MOVIMIENTO;
-                al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
 }
@@ -272,7 +318,6 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].yBoss += TAM_MOVIMIENTO;
-                al_draw_bitmap((BossArray[i].BossImg), (BossArray[i].xBoss), (BossArray[i].yBoss), 0);
                 }
             }
 
@@ -281,7 +326,6 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].yMedio += TAM_MOVIMIENTO;
-                al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
                 }
             }
 
@@ -290,22 +334,13 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].yBajo += TAM_MOVIMIENTO;
-                al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
                 }
             }
 }
 
-/// Mueve la bala según las coordenadas de la nave
-void disparar(DatosGlobales *datos){
-    int yActual=datos->Nave->yNave-ARR_BALA_Y;
-    int xActual=datos->Nave->xNave+ARR_BALA_X;
-    ALLEGRO_BITMAP * Bala = al_load_bitmap("img/Bala.bmp");
-    while (yActual>0){
-        al_draw_bitmap(Bala, xActual, yActual, 0);
-        al_flip_display();
-        al_rest(0.08);
-        yActual-=ARR_BALA_Y;
-    }
+
+void mover_bala (){
+        al_draw_bitmap((Bala[JuegoDatos->Nave->cont_balas]->Bala),(Bala[0]->xBala),(Bala[0]->yBala),0);
 }
 
 
@@ -323,6 +358,8 @@ void disparar(DatosGlobales *datos){
  ///Proceimiento que inicia el juego
 int iniciarJuego()
 {
+
+    bool hubo_disparo;
 ///Iniciar allegro
     al_init();
     al_init_image_addon(); /// Para cargar los bmps
@@ -338,7 +375,7 @@ if (!al_install_keyboard()) {
         return -1;
  }
     Pantalla = al_create_display(ANCHO, ALTO);
-
+    al_set_window_title(Pantalla, "Galaga");
 
     EventQueue = al_create_event_queue();
     if(!EventQueue){
@@ -356,8 +393,23 @@ if (!al_install_keyboard()) {
     JuegoDatos->BG = al_load_bitmap("img/nube.bmp");
     JuegoDatos->Nave->xNave=COLUMNA_NAVE;
     JuegoDatos->Nave->yNave=FILA_NAVE;
+    JuegoDatos->Nave->cont_balas = 0;
     JuegoDatos->jugando = true;
     redibujar = true;
+
+int i = 0;
+for(i ; i < CANT_BALAS ; i++){
+    Bala[i] = malloc(sizeof(BalaG));
+    Bala[i]->xBala = JuegoDatos->Nave->xNave;
+    Bala[i]->yBala = JuegoDatos->Nave->yNave;
+    Bala[i]->Bala = al_load_bitmap("img/Bala.bmp");
+}
+
+i = 0;
+for(i ; i < CANT_BALAS ; i++){
+    al_draw_bitmap((Bala[i]->Bala),-10,-10,0);
+    hilo_bala[i] = al_create_thread(disparar, JuegoDatos);
+}
 
     dibujarNave(JuegoDatos);
 
@@ -365,6 +417,10 @@ if (!al_install_keyboard()) {
 
     DibujarMarcianos();
 
+    hilo_animacion = al_create_thread(anim_marcianos, JuegoDatos);
+    al_start_thread(hilo_animacion);
+// Creación del hilo para dibujar
+    mutex = al_create_mutex();
 
     al_start_timer(timer);
 
@@ -381,35 +437,25 @@ if (!al_install_keyboard()) {
 
 ///     Eventos del teclado
             do{
-                     switch(Event.keyboard.keycode)
-                {
-                case ALLEGRO_KEY_LEFT:
-                    if(JuegoDatos->Nave->xNave > MIN_VENTANA){
-                        JuegoDatos->Nave->xNave-=TAM_MOVIMIENTO;
-                        DerechaMarcianos();
-                        redibujar = true;
-                    }
-                    break;
-                case ALLEGRO_KEY_RIGHT:
-                    if(JuegoDatos->Nave->xNave < MAX_VENTANA){
-                        JuegoDatos->Nave->xNave+=TAM_MOVIMIENTO;
-                        IzquierdaMarcianos();
-                        redibujar = true;
-                        }
-                    break;
-                case ALLEGRO_KEY_UP:
-                    ArribaMarcianos();
-                    redibujar = true;
-                    break;
-                case ALLEGRO_KEY_DOWN:
-                    AbajoMarcianos();
-                    redibujar = true;
-                    break;
+                             switch(Event.keyboard.keycode)
+                        {
+                        case ALLEGRO_KEY_LEFT:
+                            if(JuegoDatos->Nave->xNave > MIN_VENTANA){
+                                JuegoDatos->Nave->xNave-=TAM_MOVIMIENTO;
+                                redibujar = true;
+                            }
+                            break;
+                        case ALLEGRO_KEY_RIGHT:
+                            if(JuegoDatos->Nave->xNave < MAX_VENTANA){
+                                JuegoDatos->Nave->xNave+=TAM_MOVIMIENTO;
+                                redibujar = true;
+                                }
+                            break;
 
-                case ALLEGRO_KEY_SPACE:
-                    disparar(JuegoDatos);
-                    break;
-            }
+                        case ALLEGRO_KEY_SPACE:
+                            al_start_thread(hilo_bala[JuegoDatos->Nave->cont_balas]);
+                            break;
+                    }
             } while(Event.type == ALLEGRO_KEY_DOWN);
 
 
@@ -417,6 +463,9 @@ if (!al_install_keyboard()) {
 		if(JuegoDatos->jugando){
                 if(redibujar && al_is_event_queue_empty(EventQueue)){
                         al_draw_bitmap(JuegoDatos->BG, 0, 0, 0);
+                        if(Bala[JuegoDatos->Nave->cont_balas]->disparada){
+                                mover_bala();
+                        }
                         dibujarNave(JuegoDatos);
                         DibujarMarcianos(JuegoDatos);
                         al_flip_display();

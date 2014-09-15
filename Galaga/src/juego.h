@@ -4,7 +4,14 @@
 typedef struct {
     int xNave, yNave;
     ALLEGRO_BITMAP *Nave;
+    int cont_balas;
 }Nave;
+
+typedef struct {
+    int xBala, yBala;
+    ALLEGRO_BITMAP *Bala;
+    bool disparada;
+}BalaG;
 
 typedef struct {
     int xBoss, yBoss;
