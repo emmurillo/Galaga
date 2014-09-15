@@ -407,6 +407,7 @@ if (!al_install_keyboard()) {
                     break;
 
                 case ALLEGRO_KEY_SPACE:
+                    disparar(JuegoDatos);
                     break;
             }
             } while(Event.type == ALLEGRO_KEY_DOWN);
