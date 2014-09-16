@@ -175,7 +175,7 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                 }
                 case 2:             ///Para los de abajo
             {
-                        rand = my_random(0,9);
+                        rand = my_random(1,9);  ///Excluye al primer marciano
                         while(BajoArray[rand].yBajo <= ALTO+20){
                             al_rest(0.100008);
                             al_lock_mutex(mutex);
@@ -304,7 +304,7 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
                 }
             }
 
-///         MEDIO
+///         BAJO
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
@@ -338,7 +338,7 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
                 }
             }
 
-///         MEDIO
+///         BAJO
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible

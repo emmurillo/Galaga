@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="Progra" />
+		<Option title="galaga" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -37,7 +37,6 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="random.h" />
 		<Unit filename="src/juego.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -45,6 +44,7 @@
 		<Unit filename="src/random.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/random.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
