@@ -74,6 +74,7 @@ pthread_mutex_t *mut;
 ALLEGRO_THREAD * hilo_bala[CANT_BALAS];
 ALLEGRO_THREAD * hilo_animacion;
 ALLEGRO_THREAD * hilo_ataque;
+ALLEGRO_THREAD * hilo_espera_balas;
 ALLEGRO_MUTEX *mutex;
 
 ///Funciones para los hilos
@@ -133,18 +134,17 @@ void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
 void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
-    int xResp = 0, yResp = 0; /// Respaldo de las coordenadas para dibujarlos nuevamente cuando salen de la pantalla
     while(mis_datos->jugando){
     int rand = my_random(0,2);
     switch(rand){
             case 0:  ///Para los boss
             {
                         rand = my_random(0,3);
+                            al_lock_mutex(mutex);
+                            BossArray[rand].xRespBoss = BossArray[rand].xBoss;
+                            BossArray[rand].yRespBoss = BossArray[rand].yBoss;
                         while(BossArray[rand].yBoss <= ALTO+50){
                             al_rest(0.100008);
-                            al_lock_mutex(mutex);
-                            yResp = BossArray[rand].yBoss;
-                            xResp = BossArray[rand].xBoss;
                             BossArray[rand].yBoss+=10;
                             if(BossArray[rand].yBoss > FILA_NAVE -50){
                                     BossArray[rand].xBoss += 15;
@@ -152,33 +152,41 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                             else{
                                     BossArray[rand].xBoss = mis_datos->Nave->xNave;
                             }
-                            al_unlock_mutex(mutex);
                             }
+                            BossArray[rand].xBoss = BossArray[rand].xRespBoss;
+                            BossArray[rand].yBoss = BossArray[rand].yRespBoss;
+                            al_unlock_mutex(mutex);
                 break;
                 }
             case 1:     ///PAra los del medio
             {
                         rand = my_random(0,7);
-                        while(MedioArray[rand].yMedio <= FILA_NAVE -50){
-                            al_rest(0.100008);
                             al_lock_mutex(mutex);
-                            MedioArray[2].yMedio+=10;
-                            if(MedioArray[2].yMedio > FILA_NAVE -50){
-                                    MedioArray[2].xMedio += 15;
+                            MedioArray[rand].xRespMedio = MedioArray[rand].xMedio;
+                            MedioArray[rand].yRespMedio = MedioArray[rand].yMedio;
+                        while(MedioArray[rand].yMedio <= ALTO+50){
+                            al_rest(0.100008);
+                            MedioArray[rand].yMedio+=10;
+                            if(MedioArray[rand].yMedio > FILA_NAVE -50){
+                                    MedioArray[rand].xMedio += 15;
                             }
                             else{
-                                    MedioArray[2].xMedio = mis_datos->Nave->xNave;
+                                    MedioArray[rand].xMedio = mis_datos->Nave->xNave;
                             }
+                            }
+                            MedioArray[rand].xMedio = MedioArray[rand].xRespMedio;
+                            MedioArray[rand].yMedio = MedioArray[rand].yRespMedio;
                             al_unlock_mutex(mutex);
-                            }
                 break;
                 }
                 case 2:             ///Para los de abajo
             {
                         rand = my_random(1,9);  ///Excluye al primer marciano
+                            al_lock_mutex(mutex);
+                            BajoArray[rand].xRespBajo = BajoArray[rand].xBajo;
+                            BajoArray[rand].yRespBajo = BajoArray[rand].yBajo;
                         while(BajoArray[rand].yBajo <= ALTO+20){
                             al_rest(0.100008);
-                            al_lock_mutex(mutex);
                             BajoArray[rand].yBajo+=10;
                             if(BajoArray[rand].yBajo > FILA_NAVE -50){
                                     BajoArray[rand].xBajo += 15;
@@ -186,16 +194,14 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                             else{
                                     BajoArray[rand].xBajo = mis_datos->Nave->xNave;
                             }
-                            al_unlock_mutex(mutex);
                             }
+                            BajoArray[rand].xBajo = BajoArray[rand].xRespBajo;
+                            BajoArray[rand].yBajo = BajoArray[rand].yRespBajo;
+                            al_unlock_mutex(mutex);
                 break;
                 }
+        }
     }
-
-
-    }
-
-
 }
 
 /// Refresca la pantalla dibujando el BackGround
@@ -223,6 +229,8 @@ void IniciarMarcianos(){
             BossArray[i].BossImg = al_load_bitmap("img/superior.bmp");
             BossArray[i].xBoss = xInicial;
             BossArray[i].yBoss = yInicial;
+            BossArray[i].xRespBoss = xInicial;
+            BossArray[i].yRespBoss = yInicial;
             BossArray[i].visible = true;
             xInicial+=dist;
     }
@@ -235,6 +243,8 @@ void IniciarMarcianos(){
             MedioArray[i].MedioImg = al_load_bitmap("img/medio.bmp");
             MedioArray[i].xMedio = xInicial;
             MedioArray[i].yMedio = yInicial;
+            MedioArray[i].xRespMedio = xInicial;
+            MedioArray[i].yRespMedio = yInicial;
             MedioArray[i].visible = true;
             xInicial+=dist;
     }
@@ -247,6 +257,8 @@ void IniciarMarcianos(){
             BajoArray[i].BajoImg = al_load_bitmap("img/bajo.bmp");
             BajoArray[i].xBajo = xInicial;
             BajoArray[i].yBajo = yInicial;
+            BajoArray[i].xRespBajo = xInicial;
+            BajoArray[i].yRespBajo = yInicial;
             BajoArray[i].visible = true;
             xInicial+=dist;
     }
@@ -293,6 +305,7 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].xBoss += TAM_MOVIMIENTO;
+                BossArray[i].xRespBoss += TAM_MOVIMIENTO;
                 }
             }
 
@@ -301,6 +314,7 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio += TAM_MOVIMIENTO;
+                MedioArray[i].xRespMedio+= TAM_MOVIMIENTO;
                 }
             }
 
@@ -309,6 +323,7 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo += TAM_MOVIMIENTO;
+                BajoArray[i].xRespBajo+= TAM_MOVIMIENTO;
                 }
             }
 }
@@ -327,6 +342,7 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].xBoss -= TAM_MOVIMIENTO;
+                BossArray[i].xRespBoss -= TAM_MOVIMIENTO;
                 }
             }
 
@@ -335,6 +351,7 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio -= TAM_MOVIMIENTO;
+                MedioArray[i].xRespMedio -= TAM_MOVIMIENTO;
                 }
             }
 
@@ -343,6 +360,7 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo -= TAM_MOVIMIENTO;
+                BajoArray[i].xRespBajo-= TAM_MOVIMIENTO;
                 }
             }
 }
@@ -360,6 +378,7 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].yBoss -= TAM_MOVIMIENTO;
+                BossArray[i].yRespBoss -= TAM_MOVIMIENTO;
                 }
             }
 
@@ -368,14 +387,16 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].yMedio -= TAM_MOVIMIENTO;
+                MedioArray[i].yRespMedio -= TAM_MOVIMIENTO;
                 }
             }
 
-///         MEDIO
+///         BAJO
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].yBajo -= TAM_MOVIMIENTO;
+                BajoArray[i].yRespBajo-= TAM_MOVIMIENTO;
                 }
             }
 }
@@ -394,6 +415,7 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     for(i; i<CANT_BOSS;i++) {///Puesta de los boss en pantalla
             if(BossArray[i].visible){    ///Dibuja el arreglo si está visible
                 BossArray[i].yBoss += TAM_MOVIMIENTO;
+                BossArray[i].yRespBoss += TAM_MOVIMIENTO;
                 }
             }
 
@@ -402,14 +424,16 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].yMedio += TAM_MOVIMIENTO;
+                MedioArray[i].yRespMedio += TAM_MOVIMIENTO;
                 }
             }
 
-///         MEDIO
+///         BAJO
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].yBajo += TAM_MOVIMIENTO;
+                BajoArray[i].yRespBajo+= TAM_MOVIMIENTO;
                 }
             }
 }

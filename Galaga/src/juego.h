@@ -15,6 +15,7 @@ typedef struct {
 
 typedef struct {
     int xBoss, yBoss;
+    int xRespBoss, yRespBoss;
     bool herido;    ///Para saber si le han disparado
     ALLEGRO_BITMAP *BossImg;
     bool visible;
@@ -22,12 +23,14 @@ typedef struct {
 
 typedef struct {
     int xMedio, yMedio;
+    int xRespMedio, yRespMedio; ///Respaldos para que retomen la formación
     ALLEGRO_BITMAP *MedioImg;
     bool visible;
 }MedioG;
 
 typedef struct {
     int xBajo, yBajo;
+    int xRespBajo, yRespBajo;
     ALLEGRO_BITMAP *BajoImg;
     bool visible;
 }BajoG;
