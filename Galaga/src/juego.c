@@ -1,5 +1,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #include <unistd.h>
 #include <pthread.h>
 #include "juego.h"
@@ -53,6 +55,9 @@ ALLEGRO_EVENT Event;
 const float FPS = 24;
 bool redibujar;
 ALLEGRO_TIMER *timer = NULL;
+ALLEGRO_SAMPLE *shot= NULL;
+ALLEGRO_SAMPLE *song= NULL;
+ALLEGRO_SAMPLE_INSTANCE *songInstance  = NULL;
 
 ///Marcianos
 BossG BossArray[CANT_BOSS];     ///Arreglo con los Boss Galaga
@@ -128,57 +133,68 @@ void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
 void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
+    int xResp = 0, yResp = 0; /// Respaldo de las coordenadas para dibujarlos nuevamente cuando salen de la pantalla
+    while(mis_datos->jugando){
     int rand = my_random(0,2);
     switch(rand){
             case 0:  ///Para los boss
             {
-                        while(BossArray[rand].yBoss <= ALTO){
-                        al_rest(0.100008);
-                        al_lock_mutex(mutex);
-                        BossArray[rand].yBoss+=10;
-                        if(BossArray[rand].yBoss > FILA_NAVE -50){
-                                BossArray[rand].xBoss += 15;
-                        }
-                        else{
-                                BossArray[rand].xBoss = mis_datos->Nave->xNave;
-                        }
-                        al_unlock_mutex(mutex);
-                        }
+                        rand = my_random(0,3);
+                        while(BossArray[rand].yBoss <= ALTO+50){
+                            al_rest(0.100008);
+                            al_lock_mutex(mutex);
+                            yResp = BossArray[rand].yBoss;
+                            xResp = BossArray[rand].xBoss;
+                            BossArray[rand].yBoss+=10;
+                            if(BossArray[rand].yBoss > FILA_NAVE -50){
+                                    BossArray[rand].xBoss += 15;
+                            }
+                            else{
+                                    BossArray[rand].xBoss = mis_datos->Nave->xNave;
+                            }
+                            al_unlock_mutex(mutex);
+                            }
                 break;
                 }
             case 1:     ///PAra los del medio
             {
-                        while(MedioArray[rand].yMedio <= ALTO){
-                        al_rest(0.100008);
-                        al_lock_mutex(mutex);
-                        MedioArray[rand].yMedio+=10;
-                        if(MedioArray[rand].yMedio > FILA_NAVE -50){
-                                MedioArray[rand].xMedio += 15;
-                        }
-                        else{
-                                MedioArray[rand].xMedio = mis_datos->Nave->xNave;
-                        }
-                        al_unlock_mutex(mutex);
-                        }
+                        rand = my_random(0,7);
+                        while(MedioArray[rand].yMedio <= ALTO+20){
+                            al_rest(0.100008);
+                            al_lock_mutex(mutex);
+                            MedioArray[rand].yMedio+=10;
+                            if(MedioArray[rand].yMedio > FILA_NAVE -50){
+                                    MedioArray[rand].xMedio += 15;
+                            }
+                            else{
+                                    MedioArray[rand].xMedio = mis_datos->Nave->xNave;
+                            }
+                            al_unlock_mutex(mutex);
+                            }
                 break;
                 }
                 case 2:             ///Para los de abajo
             {
+                        rand = my_random(0,9);
                         while(BajoArray[rand].yBajo <= ALTO+20){
-                        al_rest(0.100008);
-                        al_lock_mutex(mutex);
-                        BajoArray[rand].yBajo+=10;
-                        if(BajoArray[rand].yBajo > FILA_NAVE -50){
-                                BajoArray[rand].xBajo += 15;
-                        }
-                        else{
-                                BajoArray[rand].xBajo = mis_datos->Nave->xNave;
-                        }
-                        al_unlock_mutex(mutex);
-                        }
+                            al_rest(0.100008);
+                            al_lock_mutex(mutex);
+                            BajoArray[rand].yBajo+=10;
+                            if(BajoArray[rand].yBajo > FILA_NAVE -50){
+                                    BajoArray[rand].xBajo += 15;
+                            }
+                            else{
+                                    BajoArray[rand].xBajo = mis_datos->Nave->xNave;
+                            }
+                            al_unlock_mutex(mutex);
+                            }
                 break;
                 }
     }
+
+
+    }
+
 
 }
 
@@ -424,11 +440,17 @@ int iniciarJuego()
     al_init();
     al_init_image_addon(); /// Para cargar los bmps
 
+    al_install_audio();         /// Carga los sonidos
+    al_init_acodec_addon();
+
     timer = al_create_timer(1.0 / FPS);
    if(!timer) {
       printf("Error en el timer");
       return -1;
    }
+
+
+
 
 if (!al_install_keyboard()) {
         printf("Error en el teclado.");
@@ -456,6 +478,15 @@ if (!al_install_keyboard()) {
     JuegoDatos->Nave->cont_balas = 0;
     JuegoDatos->jugando = true;
     redibujar = true;
+
+
+
+    al_reserve_samples(10);
+    song = al_load_sample("snd/fondo.ogg");
+    shot = al_load_sample("snd/disparo.wav");
+    songInstance= al_create_sample_instance(song);
+    al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
+    al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
 
 int i = 0;
 for(i ; i < CANT_BALAS ; i++){
@@ -517,6 +548,7 @@ for(i ; i < CANT_BALAS ; i++){
                             break;
 
                         case ALLEGRO_KEY_SPACE:
+                            al_play_sample(shot,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
                             al_start_thread(hilo_bala[JuegoDatos->Nave->cont_balas]);
                             break;
                     }
@@ -533,11 +565,15 @@ for(i ; i < CANT_BALAS ; i++){
                         dibujarNave(JuegoDatos);
                         DibujarMarcianos(JuegoDatos);
                         al_flip_display();
+                        al_play_sample_instance(songInstance);      ///Reproducir la música
                         redibujar = false;
                 }
 		}
 
     }
+    al_destroy_sample(song);
+    al_destroy_sample(shot);
+    al_destroy_sample_instance(songInstance);
     al_destroy_timer(timer);
     al_destroy_event_queue(EventQueue);
     al_destroy_display(Pantalla);
