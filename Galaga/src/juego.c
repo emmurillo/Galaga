@@ -159,15 +159,15 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
             case 1:     ///PAra los del medio
             {
                         rand = my_random(0,7);
-                        while(MedioArray[rand].yMedio <= ALTO+20){
+                        while(MedioArray[rand].yMedio <= FILA_NAVE -50){
                             al_rest(0.100008);
                             al_lock_mutex(mutex);
-                            MedioArray[rand].yMedio+=10;
-                            if(MedioArray[rand].yMedio > FILA_NAVE -50){
-                                    MedioArray[rand].xMedio += 15;
+                            MedioArray[2].yMedio+=10;
+                            if(MedioArray[2].yMedio > FILA_NAVE -50){
+                                    MedioArray[2].xMedio += 15;
                             }
                             else{
-                                    MedioArray[rand].xMedio = mis_datos->Nave->xNave;
+                                    MedioArray[2].xMedio = mis_datos->Nave->xNave;
                             }
                             al_unlock_mutex(mutex);
                             }
