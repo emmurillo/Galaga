@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "juego.h"
+#include "random.h"
 
 
 /*
@@ -67,6 +68,7 @@ pthread_t *hiloRefrescar;
 pthread_mutex_t *mut;
 ALLEGRO_THREAD * hilo_bala[CANT_BALAS];
 ALLEGRO_THREAD * hilo_animacion;
+ALLEGRO_THREAD * hilo_ataque;
 ALLEGRO_MUTEX *mutex;
 
 ///Funciones para los hilos
@@ -119,7 +121,65 @@ void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
             al_rest(VELOCIDAD_MARCIANOS);
             AbajoMarcianos();
 
+
     }
+}
+
+void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
+    DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
+    mis_datos = (DatosGlobales*)datos;
+    int rand = my_random(0,2);
+    switch(rand){
+            case 0:  ///Para los boss
+            {
+                        while(BossArray[rand].yBoss <= ALTO){
+                        al_rest(0.100008);
+                        al_lock_mutex(mutex);
+                        BossArray[rand].yBoss+=10;
+                        if(BossArray[rand].yBoss > FILA_NAVE -50){
+                                BossArray[rand].xBoss += 15;
+                        }
+                        else{
+                                BossArray[rand].xBoss = mis_datos->Nave->xNave;
+                        }
+                        al_unlock_mutex(mutex);
+                        }
+                break;
+                }
+            case 1:     ///PAra los del medio
+            {
+                        while(MedioArray[rand].yMedio <= ALTO){
+                        al_rest(0.100008);
+                        al_lock_mutex(mutex);
+                        MedioArray[rand].yMedio+=10;
+                        if(MedioArray[rand].yMedio > FILA_NAVE -50){
+                                MedioArray[rand].xMedio += 15;
+                        }
+                        else{
+                                MedioArray[rand].xMedio = mis_datos->Nave->xNave;
+                        }
+                        al_unlock_mutex(mutex);
+                        }
+                break;
+                }
+                case 2:             ///Para los de abajo
+            {
+                        while(BajoArray[rand].yBajo <= ALTO+20){
+                        al_rest(0.100008);
+                        al_lock_mutex(mutex);
+                        BajoArray[rand].yBajo+=10;
+                        if(BajoArray[rand].yBajo > FILA_NAVE -50){
+                                BajoArray[rand].xBajo += 15;
+                        }
+                        else{
+                                BajoArray[rand].xBajo = mis_datos->Nave->xNave;
+                        }
+                        al_unlock_mutex(mutex);
+                        }
+                break;
+                }
+    }
+
 }
 
 /// Refresca la pantalla dibujando el BackGround
@@ -417,10 +477,14 @@ for(i ; i < CANT_BALAS ; i++){
 
     DibujarMarcianos();
 
-    hilo_animacion = al_create_thread(anim_marcianos, JuegoDatos);
-    al_start_thread(hilo_animacion);
+
 // Creación del hilo para dibujar
     mutex = al_create_mutex();
+    hilo_animacion = al_create_thread(anim_marcianos, JuegoDatos);
+    al_start_thread(hilo_animacion);
+
+    hilo_ataque = al_create_thread(ataque_marcianos,JuegoDatos);
+    al_start_thread(hilo_ataque);
 
     al_start_timer(timer);
 

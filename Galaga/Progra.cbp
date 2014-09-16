@@ -37,10 +37,14 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="random.h" />
 		<Unit filename="src/juego.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/juego.h" />
+		<Unit filename="src/random.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />
