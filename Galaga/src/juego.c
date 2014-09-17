@@ -68,6 +68,9 @@ MedioG MedioBajoArray[CANT_MEDIO];     ///Arreglo con los marcianos del medio de
 BajoG BajoArray[CANT_BAJO];     ///Arreglo con los marcianos de abajo
 BajoG BajoBajoArray[CANT_BAJO];     ///Arreglo con los marcianos de abajo
 
+/// Arreglo de naves
+NaveG *Nave;
+
 ///Balas
 BalaG *Bala[CANT_BALAS];
 
@@ -96,13 +99,13 @@ void unlock(){
 void *disparar(ALLEGRO_THREAD *thr, void *datos){
     bool listo;
     int xBala,yBala, act;
-    act = JuegoDatos->Nave->cont_balas;
+    act = Nave->cont_balas;
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
-    xBala = (mis_datos->Nave->xNave)+ARR_BALA_X;
-    yBala = mis_datos->Nave->yNave+(ARR_BALA_Y);
+    xBala = (Nave->xNave)+ARR_BALA_X;
+    yBala = Nave->yNave+(ARR_BALA_Y);
     listo=true;
-    Bala[JuegoDatos->Nave->cont_balas]->disparada = true;
+    Bala[Nave->cont_balas]->disparada = true;
     while(listo){
             if(xBala>0){
                 al_rest(VELOCIDAD_BALA);
@@ -131,6 +134,20 @@ void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
     }
 }
 
+
+/// Determina si dos puntos están cercanos con un rango de 25 pixeles
+bool cercano(int x1,int x2){
+            return abs(x1-x2) < 25;
+}
+
+/// Indica si hay una colision entre 2 coordenadas
+bool colision(int xMarciano,int yMarciano, int xNave,int yNave){
+        if(cercano(yMarciano, yNave) && cercano(xMarciano, xNave)){
+                return true;
+        }
+        return false;
+}
+
 void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
@@ -150,7 +167,12 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                                     BossArray[rand].xBoss += 15;
                             }
                             else{
-                                    BossArray[rand].xBoss = mis_datos->Nave->xNave;
+                                    BossArray[rand].xBoss = Nave->xNave;
+                            }
+                            /// Verifica si hay colision de la nave con el marciano
+                            if(colision(BossArray[rand].xBoss, BossArray[rand].yBoss, Nave->xNave, Nave->yNave)){
+                                    ///al_set_window_title(Pantalla,"BOSS");
+                                    mis_datos->jugando = false;
                             }
                             }
                             BossArray[rand].xBoss = BossArray[rand].xRespBoss;
@@ -171,7 +193,12 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                                     MedioArray[rand].xMedio += 15;
                             }
                             else{
-                                    MedioArray[rand].xMedio = mis_datos->Nave->xNave;
+                                    MedioArray[rand].xMedio = Nave->xNave;
+                            }
+                            /// Verifica si hay colision de la nave con el marciano
+                             if(colision(MedioArray[rand].xMedio, MedioArray[rand].yMedio, Nave->xNave, Nave->yNave)){
+                                    ///al_set_window_title(Pantalla,"MEDIO");
+                                    mis_datos->jugando = false;
                             }
                             }
                             MedioArray[rand].xMedio = MedioArray[rand].xRespMedio;
@@ -192,7 +219,11 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                                     MedioBajoArray[rand].xMedio += 15;
                             }
                             else{
-                                    MedioBajoArray[rand].xMedio = mis_datos->Nave->xNave;
+                                    MedioBajoArray[rand].xMedio = Nave->xNave;
+                            }
+                            /// Verifica si hay colision de la nave con el marciano
+                            if(colision(MedioBajoArray[rand].xMedio, MedioBajoArray[rand].yMedio, Nave->xNave, Nave->yNave)){
+                                    al_set_window_title(Pantalla,"MEDIO BAJO");
                             }
                             }
                             MedioBajoArray[rand].xMedio = MedioBajoArray[rand].xRespMedio;
@@ -213,7 +244,11 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                                     BajoArray[rand].xBajo += 15;
                             }
                             else{
-                                    BajoArray[rand].xBajo = mis_datos->Nave->xNave;
+                                    BajoArray[rand].xBajo = Nave->xNave;
+                            }
+                            /// Verifica si hay colision de la nave con el marciano
+                            if(colision(BajoArray[rand].xBajo, BajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
+                                    al_set_window_title(Pantalla,"BAJO");
                             }
                             }
                             BajoArray[rand].xBajo = BajoArray[rand].xRespBajo;
@@ -234,7 +269,11 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                                     BajoBajoArray[rand].xBajo += 15;
                             }
                             else{
-                                    BajoBajoArray[rand].xBajo = mis_datos->Nave->xNave;
+                                    BajoBajoArray[rand].xBajo = Nave->xNave;
+                            }
+                            /// Verifica si hay colision de la nave con el marciano
+                            if(colision(BajoBajoArray[rand].xBajo, BajoBajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
+                                    al_set_window_title(Pantalla,"BAJO BAJO");
                             }
                             }
                             BajoBajoArray[rand].xBajo = BajoBajoArray[rand].xRespBajo;
@@ -254,7 +293,7 @@ void refrescar(DatosGlobales * datos){
 
 ///Dibuja la nave, segun las posiciones que tenga en el momento de llamar al metodo
 void dibujarNave( DatosGlobales * datos){
-    al_draw_bitmap((datos->Nave->Nave), (datos->Nave->xNave), (datos->Nave->yNave), 0);
+    al_draw_bitmap((Nave->Imagen_Nave), (Nave->xNave), (Nave->yNave), 0);
 
 }
 
@@ -514,7 +553,7 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
 
 
 void mover_bala (){
-        al_draw_bitmap((Bala[JuegoDatos->Nave->cont_balas]->Bala),(Bala[0]->xBala),(Bala[0]->yBala),0);
+        al_draw_bitmap((Bala[Nave->cont_balas]->Bala),(Bala[0]->xBala),(Bala[0]->yBala),0);
 }
 
 
@@ -566,14 +605,16 @@ if (!al_install_keyboard()) {
     al_register_event_source(EventQueue, al_get_display_event_source(Pantalla));
     al_register_event_source(EventQueue, al_get_timer_event_source(timer));
 
+    /// Inicialización de la nave
+    Nave = malloc(sizeof(Nave));
+    Nave->Imagen_Nave = al_load_bitmap("img/plane.bmp");
+    Nave->xNave=COLUMNA_NAVE;
+    Nave->yNave=FILA_NAVE;
+    Nave->cont_balas = 0;
+
     ///Inicialización de los parámetros
     JuegoDatos = malloc(sizeof (DatosGlobales)); ///Datos globales del juego
-    JuegoDatos->Nave = malloc(sizeof(Nave));
-    JuegoDatos->Nave->Nave = al_load_bitmap("img/plane.bmp");
     JuegoDatos->BG = al_load_bitmap("img/nube.bmp");
-    JuegoDatos->Nave->xNave=COLUMNA_NAVE;
-    JuegoDatos->Nave->yNave=FILA_NAVE;
-    JuegoDatos->Nave->cont_balas = 0;
     JuegoDatos->jugando = true;
     redibujar = true;
 
@@ -589,8 +630,8 @@ if (!al_install_keyboard()) {
 int i = 0;
 for(i ; i < CANT_BALAS ; i++){
     Bala[i] = malloc(sizeof(BalaG));
-    Bala[i]->xBala = JuegoDatos->Nave->xNave;
-    Bala[i]->yBala = JuegoDatos->Nave->yNave;
+    Bala[i]->xBala = Nave->xNave;
+    Bala[i]->yBala = Nave->yNave;
     Bala[i]->Bala = al_load_bitmap("img/Bala.bmp");
 }
 
@@ -633,21 +674,21 @@ for(i ; i < CANT_BALAS ; i++){
                              switch(Event.keyboard.keycode)
                         {
                         case ALLEGRO_KEY_LEFT:
-                            if(JuegoDatos->Nave->xNave > MIN_VENTANA){
-                                JuegoDatos->Nave->xNave-=TAM_MOVIMIENTO;
+                            if(Nave->xNave > MIN_VENTANA){
+                                Nave->xNave-=TAM_MOVIMIENTO;
                                 redibujar = true;
                             }
                             break;
                         case ALLEGRO_KEY_RIGHT:
-                            if(JuegoDatos->Nave->xNave < MAX_VENTANA){
-                                JuegoDatos->Nave->xNave+=TAM_MOVIMIENTO;
+                            if(Nave->xNave < MAX_VENTANA){
+                                Nave->xNave+=TAM_MOVIMIENTO;
                                 redibujar = true;
                                 }
                             break;
 
                         case ALLEGRO_KEY_SPACE:
                             al_play_sample(shot,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
-                            al_start_thread(hilo_bala[JuegoDatos->Nave->cont_balas]);
+                            al_start_thread(hilo_bala[Nave->cont_balas]);
                             break;
                     }
             } while(Event.type == ALLEGRO_KEY_DOWN);
@@ -657,7 +698,7 @@ for(i ; i < CANT_BALAS ; i++){
 		if(JuegoDatos->jugando){
                 if(redibujar && al_is_event_queue_empty(EventQueue)){
                         al_draw_bitmap(JuegoDatos->BG, 0, 0, 0);
-                        if(Bala[JuegoDatos->Nave->cont_balas]->disparada){
+                        if(Bala[Nave->cont_balas]->disparada){
                                 mover_bala();
                         }
                         dibujarNave(JuegoDatos);

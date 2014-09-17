@@ -3,9 +3,9 @@
 
 typedef struct {
     int xNave, yNave;
-    ALLEGRO_BITMAP *Nave;
+    ALLEGRO_BITMAP *Imagen_Nave;
     int cont_balas;
-}Nave;
+}NaveG;
 
 typedef struct {
     int xBala, yBala;
@@ -39,7 +39,6 @@ typedef struct {
 typedef struct {
     bool jugando;                ///Estado del juego
     ALLEGRO_BITMAP *BG; ///Fondo de pantalla
-    Nave *Nave;                     ///Nave principal
 } DatosGlobales;
 
 #endif // JUEGO_H_INCLUDED
