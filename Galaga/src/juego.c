@@ -29,6 +29,9 @@ Notas:
 /*Filas en la formación*/
 #define COLUMNA_NAVE ANCHO/2
 #define FILA_NAVE 350
+#define COLUMNA_VIDAS 10
+#define FILA_VIDAS 10
+
 #define FILA_SUPERIOR 30
 #define COLUMNA_BOSS 235
 #define FILA_MEDIO 65
@@ -70,14 +73,15 @@ BajoG BajoBajoArray[CANT_BAJO];     ///Arreglo con los marcianos de abajo
 
 /// Arreglo de naves
 NaveG *Nave;
+NaveG *Vida1;
+NaveG *Vida2;
+
 
 ///Balas
 BalaG *Bala[CANT_BALAS];
 
 
 /// Hilos
-pthread_t *hiloRefrescar;
-pthread_mutex_t *mut;
 ALLEGRO_THREAD * hilo_bala[CANT_BALAS];
 ALLEGRO_THREAD * hilo_animacion;
 ALLEGRO_THREAD * hilo_ataque;
@@ -85,14 +89,6 @@ ALLEGRO_THREAD * hilo_espera_balas;
 ALLEGRO_MUTEX *mutex;
 
 ///Funciones para los hilos
-
-void lock(){
-        pthread_mutex_lock(mut);
-}
-
-void unlock(){
-        pthread_mutex_unlock(mut);
-}
 
 
 
@@ -283,18 +279,6 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                 }
         }
     }
-}
-
-/// Refresca la pantalla dibujando el BackGround
-void refrescar(DatosGlobales * datos){
-    al_draw_bitmap(datos->BG, 0, 0, 0);
-    al_flip_display();
-}
-
-///Dibuja la nave, segun las posiciones que tenga en el momento de llamar al metodo
-void dibujarNave( DatosGlobales * datos){
-    al_draw_bitmap((Nave->Imagen_Nave), (Nave->xNave), (Nave->yNave), 0);
-
 }
 
 
@@ -558,6 +542,14 @@ void mover_bala (){
 
 
 
+///Dibuja la nave, segun las posiciones que tenga en el momento de llamar al metodo
+void dibujarNave( DatosGlobales * datos){
+    al_draw_bitmap((Nave->Imagen_Nave), (Nave->xNave), (Nave->yNave), 0);
+    al_draw_bitmap((Vida1->Imagen_Nave), (Vida1->xNave), (Vida1->yNave), 0);
+    al_draw_bitmap((Vida2->Imagen_Nave), (Vida2->xNave), (Vida2->yNave), 0);
+
+}
+
 /***
  *    ██╗███╗    ██╗██╗ ██████╗ ██╗   ██████╗
  *    ██║████╗   ██║██║ ██╔════╝██║ ██╔═══██╗
@@ -611,6 +603,17 @@ if (!al_install_keyboard()) {
     Nave->xNave=COLUMNA_NAVE;
     Nave->yNave=FILA_NAVE;
     Nave->cont_balas = 0;
+
+    /// Puesto en pantalla de las imágenes de las vidas
+    Vida1 = malloc(sizeof(Nave));
+    Vida1->Imagen_Nave = al_load_bitmap("img/vida.bmp");
+    Vida1->xNave=COLUMNA_VIDAS;
+    Vida1->yNave=FILA_VIDAS;
+
+    Vida2 = malloc(sizeof(Nave));
+    Vida2->Imagen_Nave = al_load_bitmap("img/vida.bmp");
+    Vida2->xNave=COLUMNA_VIDAS + 20;
+    Vida2->yNave=FILA_VIDAS;
 
     ///Inicialización de los parámetros
     JuegoDatos = malloc(sizeof (DatosGlobales)); ///Datos globales del juego
