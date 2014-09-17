@@ -29,11 +29,13 @@ Notas:
 /*Filas en la formación*/
 #define COLUMNA_NAVE ANCHO/2
 #define FILA_NAVE 350
-#define FILA_SUPERIOR 50
+#define FILA_SUPERIOR 30
 #define COLUMNA_BOSS 235
-#define FILA_MEDIO 100
+#define FILA_MEDIO 65
+#define FILA_MEDIA_BAJA 100
 #define COLUMNA_MEDIA 115
-#define FILA_BAJA 150
+#define FILA_BAJA 135
+#define FILA_BAJA_BAJA 170
 #define COLUMNA_BAJO 55
 
 
@@ -62,7 +64,9 @@ ALLEGRO_SAMPLE_INSTANCE *songInstance  = NULL;
 ///Marcianos
 BossG BossArray[CANT_BOSS];     ///Arreglo con los Boss Galaga
 MedioG MedioArray[CANT_MEDIO];     ///Arreglo con los marcianos del medio
+MedioG MedioBajoArray[CANT_MEDIO];     ///Arreglo con los marcianos del medio de abajo
 BajoG BajoArray[CANT_BAJO];     ///Arreglo con los marcianos de abajo
+BajoG BajoBajoArray[CANT_BAJO];     ///Arreglo con los marcianos de abajo
 
 ///Balas
 BalaG *Bala[CANT_BALAS];
@@ -121,11 +125,7 @@ void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
             al_rest(VELOCIDAD_MARCIANOS);
             DerechaMarcianos();
             al_rest(VELOCIDAD_MARCIANOS);
-            ArribaMarcianos();
-            al_rest(VELOCIDAD_MARCIANOS);
             IzquierdaMarcianos();
-            al_rest(VELOCIDAD_MARCIANOS);
-            AbajoMarcianos();
 
 
     }
@@ -135,7 +135,7 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
     while(mis_datos->jugando){
-    int rand = my_random(0,2);
+    int rand = my_random(0,4);
     switch(rand){
             case 0:  ///Para los boss
             {
@@ -156,7 +156,7 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                             BossArray[rand].xBoss = BossArray[rand].xRespBoss;
                             BossArray[rand].yBoss = BossArray[rand].yRespBoss;
                             al_unlock_mutex(mutex);
-                break;
+                            break;
                 }
             case 1:     ///PAra los del medio
             {
@@ -177,9 +177,30 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                             MedioArray[rand].xMedio = MedioArray[rand].xRespMedio;
                             MedioArray[rand].yMedio = MedioArray[rand].yRespMedio;
                             al_unlock_mutex(mutex);
-                break;
+                            break;
                 }
-                case 2:             ///Para los de abajo
+                case 2:             ///Para los del medio abajo
+            {
+                        rand = my_random(0,7);
+                            al_lock_mutex(mutex);
+                            MedioBajoArray[rand].xRespMedio = MedioBajoArray[rand].xMedio;
+                            MedioBajoArray[rand].yRespMedio = MedioBajoArray[rand].yMedio;
+                        while(MedioBajoArray[rand].yMedio <= ALTO+50){
+                            al_rest(0.100008);
+                            MedioBajoArray[rand].yMedio+=10;
+                            if(MedioBajoArray[rand].yMedio > FILA_NAVE -50){
+                                    MedioBajoArray[rand].xMedio += 15;
+                            }
+                            else{
+                                    MedioBajoArray[rand].xMedio = mis_datos->Nave->xNave;
+                            }
+                            }
+                            MedioBajoArray[rand].xMedio = MedioBajoArray[rand].xRespMedio;
+                            MedioBajoArray[rand].yMedio = MedioBajoArray[rand].yRespMedio;
+                            al_unlock_mutex(mutex);
+                            break;
+                }
+                case 3:             ///Para los de abajo
             {
                         rand = my_random(1,9);  ///Excluye al primer marciano
                             al_lock_mutex(mutex);
@@ -198,7 +219,28 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                             BajoArray[rand].xBajo = BajoArray[rand].xRespBajo;
                             BajoArray[rand].yBajo = BajoArray[rand].yRespBajo;
                             al_unlock_mutex(mutex);
-                break;
+                            break;
+                }
+                case 4:             ///Para los ultimos marcianos
+            {
+                        rand = my_random(1,9);  ///Excluye al primer marciano
+                            al_lock_mutex(mutex);
+                            BajoBajoArray[rand].xRespBajo = BajoBajoArray[rand].xBajo;
+                            BajoBajoArray[rand].yRespBajo = BajoBajoArray[rand].yBajo;
+                        while(BajoBajoArray[rand].yBajo <= ALTO+20){
+                            al_rest(0.100008);
+                            BajoBajoArray[rand].yBajo+=10;
+                            if(BajoBajoArray[rand].yBajo > FILA_NAVE -50){
+                                    BajoBajoArray[rand].xBajo += 15;
+                            }
+                            else{
+                                    BajoBajoArray[rand].xBajo = mis_datos->Nave->xNave;
+                            }
+                            }
+                            BajoBajoArray[rand].xBajo = BajoBajoArray[rand].xRespBajo;
+                            BajoBajoArray[rand].yBajo = BajoBajoArray[rand].yRespBajo;
+                            al_unlock_mutex(mutex);
+                            break;
                 }
         }
     }
@@ -246,6 +288,13 @@ void IniciarMarcianos(){
             MedioArray[i].xRespMedio = xInicial;
             MedioArray[i].yRespMedio = yInicial;
             MedioArray[i].visible = true;
+            /// Medios bajos
+            MedioBajoArray[i].MedioImg = al_load_bitmap("img/medio.bmp");
+            MedioBajoArray[i].xMedio = xInicial;
+            MedioBajoArray[i].yMedio = FILA_MEDIA_BAJA;
+            MedioBajoArray[i].xRespMedio = xInicial;
+            MedioBajoArray[i].yRespMedio = FILA_MEDIA_BAJA;
+            MedioBajoArray[i].visible = true;
             xInicial+=dist;
     }
 
@@ -260,6 +309,13 @@ void IniciarMarcianos(){
             BajoArray[i].xRespBajo = xInicial;
             BajoArray[i].yRespBajo = yInicial;
             BajoArray[i].visible = true;
+            /// Ultimos marcianos
+            BajoBajoArray[i].BajoImg = al_load_bitmap("img/bajo.bmp");
+            BajoBajoArray[i].xBajo = xInicial;
+            BajoBajoArray[i].yBajo = FILA_BAJA_BAJA;
+            BajoBajoArray[i].xRespBajo = xInicial;
+            BajoBajoArray[i].yRespBajo = FILA_BAJA_BAJA;
+            BajoBajoArray[i].visible = true;
             xInicial+=dist;
     }
 }
@@ -280,6 +336,7 @@ void DibujarMarcianos(){
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
+                al_draw_bitmap((MedioBajoArray[i].MedioImg), (MedioBajoArray[i].xMedio), (MedioBajoArray[i].yMedio), 0);
             }
 
 ///         MEDIO
@@ -287,6 +344,7 @@ void DibujarMarcianos(){
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
+                al_draw_bitmap((BajoBajoArray[i].BajoImg), (BajoBajoArray[i].xBajo), (BajoBajoArray[i].yBajo), 0);
             }
 }
 
@@ -315,6 +373,8 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio += TAM_MOVIMIENTO;
                 MedioArray[i].xRespMedio+= TAM_MOVIMIENTO;
+                MedioBajoArray[i].xMedio += TAM_MOVIMIENTO;
+                MedioBajoArray[i].xRespMedio+= TAM_MOVIMIENTO;
                 }
             }
 
@@ -324,6 +384,8 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo += TAM_MOVIMIENTO;
                 BajoArray[i].xRespBajo+= TAM_MOVIMIENTO;
+                BajoBajoArray[i].xBajo += TAM_MOVIMIENTO;
+                BajoBajoArray[i].xRespBajo+= TAM_MOVIMIENTO;
                 }
             }
 }
@@ -352,6 +414,8 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio -= TAM_MOVIMIENTO;
                 MedioArray[i].xRespMedio -= TAM_MOVIMIENTO;
+                MedioBajoArray[i].xMedio -= TAM_MOVIMIENTO;
+                MedioBajoArray[i].xRespMedio -= TAM_MOVIMIENTO;
                 }
             }
 
@@ -361,6 +425,8 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo -= TAM_MOVIMIENTO;
                 BajoArray[i].xRespBajo-= TAM_MOVIMIENTO;
+                BajoBajoArray[i].xBajo -= TAM_MOVIMIENTO;
+                BajoBajoArray[i].xRespBajo -= TAM_MOVIMIENTO;
                 }
             }
 }
@@ -388,6 +454,8 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].yMedio -= TAM_MOVIMIENTO;
                 MedioArray[i].yRespMedio -= TAM_MOVIMIENTO;
+                MedioBajoArray[i].yMedio -= TAM_MOVIMIENTO;
+                MedioBajoArray[i].yRespMedio -= TAM_MOVIMIENTO;
                 }
             }
 
@@ -397,6 +465,8 @@ if(BossArray[0].yBoss < 50){       /// Límite para dejar de subir
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].yBajo -= TAM_MOVIMIENTO;
                 BajoArray[i].yRespBajo-= TAM_MOVIMIENTO;
+                BajoBajoArray[i].yBajo -= TAM_MOVIMIENTO;
+                BajoBajoArray[i].yRespBajo -= TAM_MOVIMIENTO;
                 }
             }
 }
@@ -425,6 +495,8 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].yMedio += TAM_MOVIMIENTO;
                 MedioArray[i].yRespMedio += TAM_MOVIMIENTO;
+                MedioBajoArray[i].yMedio += TAM_MOVIMIENTO;
+                MedioBajoArray[i].yRespMedio += TAM_MOVIMIENTO;
                 }
             }
 
@@ -434,6 +506,8 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].yBajo += TAM_MOVIMIENTO;
                 BajoArray[i].yRespBajo+= TAM_MOVIMIENTO;
+                BajoBajoArray[i].yBajo += TAM_MOVIMIENTO;
+                BajoBajoArray[i].yRespBajo+= TAM_MOVIMIENTO;
                 }
             }
 }
