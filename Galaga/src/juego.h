@@ -5,7 +5,6 @@ typedef struct {
     int xNave, yNave;
     bool colisionado;
     ALLEGRO_BITMAP *Imagen_Nave;
-    int cont_balas;
 }NaveG;
 
 typedef struct {

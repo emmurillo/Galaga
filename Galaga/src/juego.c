@@ -84,7 +84,7 @@ NaveG *Vida2;
 
 
 ///Balas
-BalaG *Bala[CANT_BALAS];
+BalaG *Bala;
 
 
 /// Hilos
@@ -98,35 +98,12 @@ ALLEGRO_MUTEX *mutex;
 
 
 
-void *disparar(ALLEGRO_THREAD *thr, void *datos){
-    bool listo;
-    int xBala,yBala, act;
-    act = Nave->cont_balas;
-    DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
-    mis_datos = (DatosGlobales*)datos;
-    xBala = (Nave->xNave)+ARR_BALA_X;
-    yBala = Nave->yNave+(ARR_BALA_Y);
-    listo=true;
-    Bala[Nave->cont_balas]->disparada = true;
-    while(listo){
-            if(xBala>0){
-                al_rest(VELOCIDAD_BALA);
-                al_lock_mutex(mutex);
-                yBala -= ARR_BALA_Y;
-                Bala[act]->yBala = yBala;
-                Bala[act]->xBala = xBala;
-                al_unlock_mutex(mutex);
-            }
-            else{
-                    listo = false;
-            }
-    }
-}
+
 
 void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
-    while(1){
+    while(JuegoDatos->jugando){
             al_rest(VELOCIDAD_MARCIANOS);
             DerechaMarcianos();
             al_rest(VELOCIDAD_MARCIANOS);
@@ -631,10 +608,6 @@ if(BajoArray[0].yBajo > 200 ){       /// Límite para dejar de bajar antes de at
 }
 
 
-void mover_bala (){
-        al_draw_bitmap((Bala[Nave->cont_balas]->Bala),(Bala[0]->xBala),(Bala[0]->yBala),0);
-}
-
 
 
 ///Dibuja la nave, segun las posiciones que tenga en el momento de llamar al metodo
@@ -651,6 +624,10 @@ void dibujarNave( DatosGlobales * datos){
                 al_draw_bitmap(explosion, MAS_ALLA, MAS_ALLA, 0);
                 Nave->colisionado = false;
     }
+    }
+
+    dibujarBala(){
+                    al_draw_bitmap(Bala->Bala, Bala->xBala, Bala->yBala,0);
     }
 
 /***
@@ -706,7 +683,6 @@ if (!al_install_keyboard()) {
     Nave->xNave=COLUMNA_NAVE;
     Nave->yNave=FILA_NAVE;
     Nave->colisionado = false;
-    Nave->cont_balas = 0;
 
     /// Puesto en pantalla de las imágenes de las vidas
     Vida1 = malloc(sizeof(Nave));
@@ -738,19 +714,10 @@ if (!al_install_keyboard()) {
     al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
     al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
 
-int i = 0;
-for(i ; i < CANT_BALAS ; i++){
-    Bala[i] = malloc(sizeof(BalaG));
-    Bala[i]->xBala = Nave->xNave;
-    Bala[i]->yBala = Nave->yNave;
-    Bala[i]->Bala = al_load_bitmap("img/Bala.bmp");
-}
-
-i = 0;
-for(i ; i < CANT_BALAS ; i++){
-    al_draw_bitmap((Bala[i]->Bala),-10,-10,0);
-    hilo_bala[i] = al_create_thread(disparar, JuegoDatos);
-}
+Bala = malloc(sizeof(Bala));
+Bala->Bala = al_load_bitmap("img/Bala.bmp");
+Bala->xBala = 10;
+Bala->yBala = 10;
 
     dibujarNave(JuegoDatos);
 
@@ -804,25 +771,34 @@ for(i ; i < CANT_BALAS ; i++){
 
                                 case ALLEGRO_KEY_SPACE:
                                     al_play_sample(shot,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
-                                    al_start_thread(hilo_bala[Nave->cont_balas]);
+                                    Bala->disparada = true;
                                     break;
                             }
                     } while(Event.type == ALLEGRO_KEY_DOWN);
 
 ///     Redibujar
 		if(JuegoDatos->jugando){
-            if(JuegoDatos->fin_del_juego){
-                                al_set_window_title(Pantalla,"Fin del juego");
-                                al_rest(1);
+            if(JuegoDatos->fin_del_juego){  /// Protocolo del final del juego
+                                al_draw_bitmap(explosion, (Nave->xNave-15), (Nave->yNave-15), 0);
+                                al_play_sample(sonido_explosion,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
+                                al_flip_display();
+                                al_rest(0.8);
+                                break;
                         }
-                if(redibujar && al_is_event_queue_empty(EventQueue)){
-                        al_draw_bitmap(JuegoDatos->BG, 0, 0, 0);
-                        dibujarNave(JuegoDatos);
-                        DibujarMarcianos(JuegoDatos);
-                        al_flip_display();
-                        al_play_sample_instance(songInstance);      ///Reproducir la música
-                        redibujar = false;
-                }
+            if(Bala->disparada){
+                    al_set_window_title(Pantalla, "Disparo");
+                    al_flip_display();
+                    al_rest(0.5);
+                    Bala->disparada = false;
+            }
+            if(redibujar && al_is_event_queue_empty(EventQueue)){
+                    al_draw_bitmap(JuegoDatos->BG, 0, 0, 0);
+                    dibujarNave(JuegoDatos);
+                    DibujarMarcianos(JuegoDatos);
+                    al_flip_display();
+                    al_play_sample_instance(songInstance);      ///Reproducir la música
+                    redibujar = false;
+            }
 		}
 
     }
