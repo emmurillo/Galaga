@@ -154,7 +154,7 @@ bool colision(int xMarciano,int yMarciano, int xNave,int yNave){
 void matar_nave(){  /// Determina la cantidad de vidas y las desaparece de pantalla
         switch(JuegoDatos->cantidad_vidas){
                 case 0:
-                            JuegoDatos->jugando = false;
+                            JuegoDatos->fin_del_juego = true;
                 case 2:
                             Vida2->xNave=-100; /// Desaparece una vida de la pantalla
                             Vida2->yNave=-100;
@@ -643,16 +643,15 @@ void dibujarNave( DatosGlobales * datos){
     al_draw_bitmap((Vida1->Imagen_Nave), (Vida1->xNave), (Vida1->yNave), 0);
     al_draw_bitmap((Vida2->Imagen_Nave), (Vida2->xNave), (Vida2->yNave), 0);
     if(Nave->colisionado){
-                al_draw_bitmap(explosion, (Nave->xNave), (Nave->yNave), 0);
+                al_draw_bitmap(explosion, (Nave->xNave-15), (Nave->yNave-15), 0);
                 al_play_sample(sonido_explosion,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
                 DibujarMarcianos();
                 al_flip_display();
                 al_rest(0.8);
-                Nave->colisionado = false;
                 al_draw_bitmap(explosion, MAS_ALLA, MAS_ALLA, 0);
+                Nave->colisionado = false;
     }
-
-}
+    }
 
 /***
  *    ██╗███╗    ██╗██╗ ██████╗ ██╗   ██████╗
@@ -776,7 +775,7 @@ for(i ; i < CANT_BALAS ; i++){
     explosion = al_load_bitmap("img/explosion.bmp");
 
 /// Ciclo principal del juego
-    while(JuegoDatos->jugando)
+    while(JuegoDatos->jugando && !Nave->colisionado)
     {
 
         al_wait_for_event(EventQueue, &Event);
@@ -812,6 +811,10 @@ for(i ; i < CANT_BALAS ; i++){
 
 ///     Redibujar
 		if(JuegoDatos->jugando){
+            if(JuegoDatos->fin_del_juego){
+                                al_set_window_title(Pantalla,"Fin del juego");
+                                al_rest(1);
+                        }
                 if(redibujar && al_is_event_queue_empty(EventQueue)){
                         al_draw_bitmap(JuegoDatos->BG, 0, 0, 0);
                         dibujarNave(JuegoDatos);
@@ -823,9 +826,6 @@ for(i ; i < CANT_BALAS ; i++){
 		}
 
     }
-
-    al_clear_to_color(al_map_rgb(0,0,0));
-    al_rest(1);
 
     al_destroy_sample(song);
     al_destroy_sample(shot);
