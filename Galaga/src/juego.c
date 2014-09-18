@@ -15,7 +15,7 @@ Notas:
 */
 
 /*Macros*/
-#define TAM_MOVIMIENTO 30 /*Tamaño de movimiento de la nave*/
+#define TAM_MOVIMIENTO 10 /*Tamaño de movimiento de la nave*/
 #define ANCHO 700
 #define ALTO 400
 /*Margenes de la ventana*/
@@ -42,10 +42,12 @@ Notas:
 #define COLUMNA_BAJO 55
 
 
+#define MAS_ALLA 1000
+
 #define CANT_BALAS 5
 
 /*Velocidades de los marcianos*/
-#define VELOCIDAD_MARCIANOS 0.5
+#define VELOCIDAD_MARCIANOS 0.3
 #define VELOCIDAD_BALA 0.09
 
 #define ARR_BALA_X 14
@@ -62,7 +64,11 @@ bool redibujar;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_SAMPLE *shot= NULL;
 ALLEGRO_SAMPLE *song= NULL;
+ALLEGRO_SAMPLE *sonido_explosion= NULL;
 ALLEGRO_SAMPLE_INSTANCE *songInstance  = NULL;
+
+/// Explosión
+ALLEGRO_BITMAP *explosion;
 
 ///Marcianos
 BossG BossArray[CANT_BOSS];     ///Arreglo con los Boss Galaga
@@ -144,6 +150,27 @@ bool colision(int xMarciano,int yMarciano, int xNave,int yNave){
         return false;
 }
 
+
+void matar_nave(){  /// Determina la cantidad de vidas y las desaparece de pantalla
+        switch(JuegoDatos->cantidad_vidas){
+                case 0:
+                            JuegoDatos->jugando = false;
+                case 2:
+                            Vida2->xNave=-100; /// Desaparece una vida de la pantalla
+                            Vida2->yNave=-100;
+                            JuegoDatos->cantidad_vidas--;
+                            break;
+                case 1:
+                            Vida1->xNave=-100; /// Desaparece una vida de la pantalla
+                            Vida1->yNave=-100;
+                            JuegoDatos->cantidad_vidas--;
+                            break;
+                default:
+                            break;
+}
+
+}
+
 void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
@@ -153,128 +180,156 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
             case 0:  ///Para los boss
             {
                         rand = my_random(0,3);
-                            al_lock_mutex(mutex);
-                            BossArray[rand].xRespBoss = BossArray[rand].xBoss;
-                            BossArray[rand].yRespBoss = BossArray[rand].yBoss;
-                        while(BossArray[rand].yBoss <= ALTO+50){
-                            al_rest(0.100008);
-                            BossArray[rand].yBoss+=10;
-                            if(BossArray[rand].yBoss > FILA_NAVE -50){
-                                    BossArray[rand].xBoss += 15;
+                        if(BossArray[rand].visible){
+                                        al_lock_mutex(mutex);
+                                        BossArray[rand].xRespBoss = BossArray[rand].xBoss;
+                                        BossArray[rand].yRespBoss = BossArray[rand].yBoss;
+                                    while(BossArray[rand].yBoss <= ALTO+50){
+                                        al_rest(0.100008);
+                                        BossArray[rand].yBoss+=10;
+                                        if(BossArray[rand].yBoss > FILA_NAVE -50){
+                                                BossArray[rand].xBoss += 15;
+                                        }
+                                        else{
+                                                BossArray[rand].xBoss = Nave->xNave;
+                                        }
+                                        /// Verifica si hay colision de la nave con el marciano
+                                        if(colision(BossArray[rand].xBoss, BossArray[rand].yBoss, Nave->xNave, Nave->yNave)){
+                                                BossArray[rand].xBoss = MAS_ALLA;
+                                                BossArray[rand].yBoss = MAS_ALLA;
+                                                BossArray[rand].visible = false;
+                                                matar_nave();
+                                                Nave->colisionado = true;
+                                        }
+                                        }
+                                        BossArray[rand].xBoss = BossArray[rand].xRespBoss;
+                                        BossArray[rand].yBoss = BossArray[rand].yRespBoss;
+                                        al_unlock_mutex(mutex);
                             }
-                            else{
-                                    BossArray[rand].xBoss = Nave->xNave;
-                            }
-                            /// Verifica si hay colision de la nave con el marciano
-                            if(colision(BossArray[rand].xBoss, BossArray[rand].yBoss, Nave->xNave, Nave->yNave)){
-                                    ///al_set_window_title(Pantalla,"BOSS");
-                                    mis_datos->jugando = false;
-                            }
-                            }
-                            BossArray[rand].xBoss = BossArray[rand].xRespBoss;
-                            BossArray[rand].yBoss = BossArray[rand].yRespBoss;
-                            al_unlock_mutex(mutex);
                             break;
                 }
             case 1:     ///PAra los del medio
             {
                         rand = my_random(0,7);
-                            al_lock_mutex(mutex);
-                            MedioArray[rand].xRespMedio = MedioArray[rand].xMedio;
-                            MedioArray[rand].yRespMedio = MedioArray[rand].yMedio;
-                        while(MedioArray[rand].yMedio <= ALTO+50){
-                            al_rest(0.100008);
-                            MedioArray[rand].yMedio+=10;
-                            if(MedioArray[rand].yMedio > FILA_NAVE -50){
-                                    MedioArray[rand].xMedio += 15;
+                        if(MedioArray[rand].visible){
+                                    al_lock_mutex(mutex);
+                                    MedioArray[rand].xRespMedio = MedioArray[rand].xMedio;
+                                    MedioArray[rand].yRespMedio = MedioArray[rand].yMedio;
+                                while(MedioArray[rand].yMedio <= ALTO+50){
+                                    al_rest(0.100008);
+                                    MedioArray[rand].yMedio+=10;
+                                    if(MedioArray[rand].yMedio > FILA_NAVE -50){
+                                            MedioArray[rand].xMedio += 15;
+                                    }
+                                    else{
+                                            MedioArray[rand].xMedio = Nave->xNave;
+                                    }
+                                    /// Verifica si hay colision de la nave con el marciano
+                                     if(colision(MedioArray[rand].xMedio, MedioArray[rand].yMedio, Nave->xNave, Nave->yNave)){
+                                            MedioArray[rand].xMedio= MAS_ALLA;
+                                            MedioArray[rand].yMedio= MAS_ALLA;
+                                            MedioArray[rand].visible = false;
+                                            matar_nave();
+                                            Nave->colisionado = true;
+                                    }
+                                    }
+                                    MedioArray[rand].xMedio = MedioArray[rand].xRespMedio;
+                                    MedioArray[rand].yMedio = MedioArray[rand].yRespMedio;
+                                    al_unlock_mutex(mutex);
                             }
-                            else{
-                                    MedioArray[rand].xMedio = Nave->xNave;
-                            }
-                            /// Verifica si hay colision de la nave con el marciano
-                             if(colision(MedioArray[rand].xMedio, MedioArray[rand].yMedio, Nave->xNave, Nave->yNave)){
-                                    ///al_set_window_title(Pantalla,"MEDIO");
-                                    mis_datos->jugando = false;
-                            }
-                            }
-                            MedioArray[rand].xMedio = MedioArray[rand].xRespMedio;
-                            MedioArray[rand].yMedio = MedioArray[rand].yRespMedio;
-                            al_unlock_mutex(mutex);
                             break;
                 }
                 case 2:             ///Para los del medio abajo
             {
                         rand = my_random(0,7);
-                            al_lock_mutex(mutex);
-                            MedioBajoArray[rand].xRespMedio = MedioBajoArray[rand].xMedio;
-                            MedioBajoArray[rand].yRespMedio = MedioBajoArray[rand].yMedio;
-                        while(MedioBajoArray[rand].yMedio <= ALTO+50){
-                            al_rest(0.100008);
-                            MedioBajoArray[rand].yMedio+=10;
-                            if(MedioBajoArray[rand].yMedio > FILA_NAVE -50){
-                                    MedioBajoArray[rand].xMedio += 15;
+                        if(MedioBajoArray[rand].visible){
+                                    al_lock_mutex(mutex);
+                                    MedioBajoArray[rand].xRespMedio = MedioBajoArray[rand].xMedio;
+                                    MedioBajoArray[rand].yRespMedio = MedioBajoArray[rand].yMedio;
+                                while(MedioBajoArray[rand].yMedio <= ALTO+50){
+                                    al_rest(0.100008);
+                                    MedioBajoArray[rand].yMedio+=10;
+                                    if(MedioBajoArray[rand].yMedio > FILA_NAVE -50){
+                                            MedioBajoArray[rand].xMedio += 15;
+                                    }
+                                    else{
+                                            MedioBajoArray[rand].xMedio = Nave->xNave;
+                                    }
+                                    /// Verifica si hay colision de la nave con el marciano
+                                    if(colision(MedioBajoArray[rand].xMedio, MedioBajoArray[rand].yMedio, Nave->xNave, Nave->yNave)){
+                                            MedioBajoArray[rand].xMedio= MAS_ALLA;
+                                            MedioBajoArray[rand].yMedio= MAS_ALLA;
+                                            MedioBajoArray[rand].visible = false;
+                                            matar_nave();
+                                            Nave->colisionado = true;
+                                    }
+                                    }
+                                    MedioBajoArray[rand].xMedio = MedioBajoArray[rand].xRespMedio;
+                                    MedioBajoArray[rand].yMedio = MedioBajoArray[rand].yRespMedio;
+                                    al_unlock_mutex(mutex);
                             }
-                            else{
-                                    MedioBajoArray[rand].xMedio = Nave->xNave;
-                            }
-                            /// Verifica si hay colision de la nave con el marciano
-                            if(colision(MedioBajoArray[rand].xMedio, MedioBajoArray[rand].yMedio, Nave->xNave, Nave->yNave)){
-                                    al_set_window_title(Pantalla,"MEDIO BAJO");
-                            }
-                            }
-                            MedioBajoArray[rand].xMedio = MedioBajoArray[rand].xRespMedio;
-                            MedioBajoArray[rand].yMedio = MedioBajoArray[rand].yRespMedio;
-                            al_unlock_mutex(mutex);
                             break;
                 }
                 case 3:             ///Para los de abajo
             {
                         rand = my_random(1,9);  ///Excluye al primer marciano
-                            al_lock_mutex(mutex);
-                            BajoArray[rand].xRespBajo = BajoArray[rand].xBajo;
-                            BajoArray[rand].yRespBajo = BajoArray[rand].yBajo;
-                        while(BajoArray[rand].yBajo <= ALTO+20){
-                            al_rest(0.100008);
-                            BajoArray[rand].yBajo+=10;
-                            if(BajoArray[rand].yBajo > FILA_NAVE -50){
-                                    BajoArray[rand].xBajo += 15;
+                        if(BajoArray[rand].visible){
+                                    al_lock_mutex(mutex);
+                                    BajoArray[rand].xRespBajo = BajoArray[rand].xBajo;
+                                    BajoArray[rand].yRespBajo = BajoArray[rand].yBajo;
+                                while(BajoArray[rand].yBajo <= ALTO+20){
+                                    al_rest(0.100008);
+                                    BajoArray[rand].yBajo+=10;
+                                    if(BajoArray[rand].yBajo > FILA_NAVE -50){
+                                            BajoArray[rand].xBajo += 15;
+                                    }
+                                    else{
+                                            BajoArray[rand].xBajo = Nave->xNave;
+                                    }
+                                    /// Verifica si hay colision de la nave con el marciano
+                                    if(colision(BajoArray[rand].xBajo, BajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
+                                            BajoArray[rand].xBajo= MAS_ALLA;
+                                            BajoArray[rand].xBajo= MAS_ALLA;
+                                            BajoArray[rand].visible = false;
+                                            matar_nave();
+                                            Nave->colisionado = true;
+                                    }
+                                    }
+                                    BajoArray[rand].xBajo = BajoArray[rand].xRespBajo;
+                                    BajoArray[rand].yBajo = BajoArray[rand].yRespBajo;
+                                    al_unlock_mutex(mutex);
                             }
-                            else{
-                                    BajoArray[rand].xBajo = Nave->xNave;
-                            }
-                            /// Verifica si hay colision de la nave con el marciano
-                            if(colision(BajoArray[rand].xBajo, BajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
-                                    al_set_window_title(Pantalla,"BAJO");
-                            }
-                            }
-                            BajoArray[rand].xBajo = BajoArray[rand].xRespBajo;
-                            BajoArray[rand].yBajo = BajoArray[rand].yRespBajo;
-                            al_unlock_mutex(mutex);
                             break;
                 }
                 case 4:             ///Para los ultimos marcianos
             {
                         rand = my_random(1,9);  ///Excluye al primer marciano
-                            al_lock_mutex(mutex);
-                            BajoBajoArray[rand].xRespBajo = BajoBajoArray[rand].xBajo;
-                            BajoBajoArray[rand].yRespBajo = BajoBajoArray[rand].yBajo;
-                        while(BajoBajoArray[rand].yBajo <= ALTO+20){
-                            al_rest(0.100008);
-                            BajoBajoArray[rand].yBajo+=10;
-                            if(BajoBajoArray[rand].yBajo > FILA_NAVE -50){
-                                    BajoBajoArray[rand].xBajo += 15;
+                        if(BajoBajoArray[rand].visible){
+                                    al_lock_mutex(mutex);
+                                    BajoBajoArray[rand].xRespBajo = BajoBajoArray[rand].xBajo;
+                                    BajoBajoArray[rand].yRespBajo = BajoBajoArray[rand].yBajo;
+                                while(BajoBajoArray[rand].yBajo <= ALTO+20){
+                                    al_rest(0.100008);
+                                    BajoBajoArray[rand].yBajo+=10;
+                                    if(BajoBajoArray[rand].yBajo > FILA_NAVE -50){
+                                            BajoBajoArray[rand].xBajo += 15;
+                                    }
+                                    else{
+                                            BajoBajoArray[rand].xBajo = Nave->xNave;
+                                    }
+                                    /// Verifica si hay colision de la nave con el marciano
+                                    if(colision(BajoBajoArray[rand].xBajo, BajoBajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
+                                            BajoBajoArray[rand].xBajo= MAS_ALLA;
+                                            BajoBajoArray[rand].yBajo= MAS_ALLA;
+                                            BajoBajoArray[rand].visible = false;
+                                            matar_nave();
+                                            Nave->colisionado = true;
+                                    }
+                                    }
+                                    BajoBajoArray[rand].xBajo = BajoBajoArray[rand].xRespBajo;
+                                    BajoBajoArray[rand].yBajo = BajoBajoArray[rand].yRespBajo;
+                                    al_unlock_mutex(mutex);
                             }
-                            else{
-                                    BajoBajoArray[rand].xBajo = Nave->xNave;
-                            }
-                            /// Verifica si hay colision de la nave con el marciano
-                            if(colision(BajoBajoArray[rand].xBajo, BajoBajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
-                                    al_set_window_title(Pantalla,"BAJO BAJO");
-                            }
-                            }
-                            BajoBajoArray[rand].xBajo = BajoBajoArray[rand].xRespBajo;
-                            BajoBajoArray[rand].yBajo = BajoBajoArray[rand].yRespBajo;
-                            al_unlock_mutex(mutex);
                             break;
                 }
         }
@@ -359,14 +414,26 @@ void DibujarMarcianos(){
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((MedioArray[i].MedioImg), (MedioArray[i].xMedio), (MedioArray[i].yMedio), 0);
+            }
+
+///         MEDIO BAJO
+    i=0;
+    for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
+            if(MedioBajoArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((MedioBajoArray[i].MedioImg), (MedioBajoArray[i].xMedio), (MedioBajoArray[i].yMedio), 0);
             }
 
-///         MEDIO
+///         BAJO
     i=0;
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((BajoArray[i].BajoImg), (BajoArray[i].xBajo), (BajoArray[i].yBajo), 0);
+            }
+
+///         BAJO BAJO
+    i=0;
+    for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
+            if(BajoBajoArray[i].visible)    ///Dibuja el arreglo si está visible
                 al_draw_bitmap((BajoBajoArray[i].BajoImg), (BajoBajoArray[i].xBajo), (BajoBajoArray[i].yBajo), 0);
             }
 }
@@ -396,6 +463,13 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio += TAM_MOVIMIENTO;
                 MedioArray[i].xRespMedio+= TAM_MOVIMIENTO;
+                }
+            }
+
+///         MEDIO BAJO
+    i=0;
+    for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
+            if(MedioBajoArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioBajoArray[i].xMedio += TAM_MOVIMIENTO;
                 MedioBajoArray[i].xRespMedio+= TAM_MOVIMIENTO;
                 }
@@ -407,6 +481,13 @@ if(BajoArray[9].xBajo >  620 ){       /// Límite para dejar de bajar antes de a
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo += TAM_MOVIMIENTO;
                 BajoArray[i].xRespBajo+= TAM_MOVIMIENTO;
+                }
+            }
+
+            ///         BAJO BAJO
+    i=0;
+    for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
+            if(BajoBajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoBajoArray[i].xBajo += TAM_MOVIMIENTO;
                 BajoBajoArray[i].xRespBajo+= TAM_MOVIMIENTO;
                 }
@@ -436,9 +517,16 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
             if(MedioArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioArray[i].xMedio -= TAM_MOVIMIENTO;
-                MedioArray[i].xRespMedio -= TAM_MOVIMIENTO;
+                MedioArray[i].xRespMedio-= TAM_MOVIMIENTO;
+                }
+            }
+
+///         MEDIO BAJO
+    i=0;
+    for(i; i<CANT_MEDIO;i++) {///Puesta de los boss en pantalla
+            if(MedioBajoArray[i].visible){    ///Dibuja el arreglo si está visible
                 MedioBajoArray[i].xMedio -= TAM_MOVIMIENTO;
-                MedioBajoArray[i].xRespMedio -= TAM_MOVIMIENTO;
+                MedioBajoArray[i].xRespMedio-= TAM_MOVIMIENTO;
                 }
             }
 
@@ -447,7 +535,14 @@ if(BajoArray[0].xBajo < 50 ){       /// Límite para dejar de bajar antes de ata
     for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
             if(BajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoArray[i].xBajo -= TAM_MOVIMIENTO;
-                BajoArray[i].xRespBajo-= TAM_MOVIMIENTO;
+                BajoArray[i].xRespBajo -= TAM_MOVIMIENTO;
+                }
+            }
+
+            ///         BAJO BAJO
+    i=0;
+    for(i; i<CANT_BAJO;i++) {///Puesta de los boss en pantalla
+            if(BajoBajoArray[i].visible) {   ///Dibuja el arreglo si está visible
                 BajoBajoArray[i].xBajo -= TAM_MOVIMIENTO;
                 BajoBajoArray[i].xRespBajo -= TAM_MOVIMIENTO;
                 }
@@ -547,6 +642,15 @@ void dibujarNave( DatosGlobales * datos){
     al_draw_bitmap((Nave->Imagen_Nave), (Nave->xNave), (Nave->yNave), 0);
     al_draw_bitmap((Vida1->Imagen_Nave), (Vida1->xNave), (Vida1->yNave), 0);
     al_draw_bitmap((Vida2->Imagen_Nave), (Vida2->xNave), (Vida2->yNave), 0);
+    if(Nave->colisionado){
+                al_draw_bitmap(explosion, (Nave->xNave), (Nave->yNave), 0);
+                al_play_sample(sonido_explosion,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
+                DibujarMarcianos();
+                al_flip_display();
+                al_rest(0.8);
+                Nave->colisionado = false;
+                al_draw_bitmap(explosion, MAS_ALLA, MAS_ALLA, 0);
+    }
 
 }
 
@@ -602,6 +706,7 @@ if (!al_install_keyboard()) {
     Nave->Imagen_Nave = al_load_bitmap("img/plane.bmp");
     Nave->xNave=COLUMNA_NAVE;
     Nave->yNave=FILA_NAVE;
+    Nave->colisionado = false;
     Nave->cont_balas = 0;
 
     /// Puesto en pantalla de las imágenes de las vidas
@@ -619,13 +724,17 @@ if (!al_install_keyboard()) {
     JuegoDatos = malloc(sizeof (DatosGlobales)); ///Datos globales del juego
     JuegoDatos->BG = al_load_bitmap("img/nube.bmp");
     JuegoDatos->jugando = true;
+    JuegoDatos->fin_del_juego = false;
+    JuegoDatos->cantidad_vidas = 2;
     redibujar = true;
 
 
 
+/// Sonidos del juego
     al_reserve_samples(10);
     song = al_load_sample("snd/fondo.ogg");
     shot = al_load_sample("snd/disparo.wav");
+    sonido_explosion = al_load_sample("snd/explosion.wav");
     songInstance= al_create_sample_instance(song);
     al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
     al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
@@ -661,6 +770,11 @@ for(i ; i < CANT_BALAS ; i++){
 
     al_start_timer(timer);
 
+
+    /// Dibuja la explosion
+
+    explosion = al_load_bitmap("img/explosion.bmp");
+
 /// Ciclo principal del juego
     while(JuegoDatos->jugando)
     {
@@ -673,37 +787,33 @@ for(i ; i < CANT_BALAS ; i++){
 
 
 ///     Eventos del teclado
-            do{
-                             switch(Event.keyboard.keycode)
-                        {
-                        case ALLEGRO_KEY_LEFT:
-                            if(Nave->xNave > MIN_VENTANA){
-                                Nave->xNave-=TAM_MOVIMIENTO;
-                                redibujar = true;
+                    do{
+                                     switch(Event.keyboard.keycode)
+                                {
+                                case ALLEGRO_KEY_LEFT:
+                                    if(Nave->xNave > MIN_VENTANA){
+                                        Nave->xNave-=TAM_MOVIMIENTO;
+                                        redibujar = true;
+                                    }
+                                    break;
+                                case ALLEGRO_KEY_RIGHT:
+                                    if(Nave->xNave < MAX_VENTANA){
+                                        Nave->xNave+=TAM_MOVIMIENTO;
+                                        redibujar = true;
+                                        }
+                                    break;
+
+                                case ALLEGRO_KEY_SPACE:
+                                    al_play_sample(shot,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
+                                    al_start_thread(hilo_bala[Nave->cont_balas]);
+                                    break;
                             }
-                            break;
-                        case ALLEGRO_KEY_RIGHT:
-                            if(Nave->xNave < MAX_VENTANA){
-                                Nave->xNave+=TAM_MOVIMIENTO;
-                                redibujar = true;
-                                }
-                            break;
-
-                        case ALLEGRO_KEY_SPACE:
-                            al_play_sample(shot,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
-                            al_start_thread(hilo_bala[Nave->cont_balas]);
-                            break;
-                    }
-            } while(Event.type == ALLEGRO_KEY_DOWN);
-
+                    } while(Event.type == ALLEGRO_KEY_DOWN);
 
 ///     Redibujar
 		if(JuegoDatos->jugando){
                 if(redibujar && al_is_event_queue_empty(EventQueue)){
                         al_draw_bitmap(JuegoDatos->BG, 0, 0, 0);
-                        if(Bala[Nave->cont_balas]->disparada){
-                                mover_bala();
-                        }
                         dibujarNave(JuegoDatos);
                         DibujarMarcianos(JuegoDatos);
                         al_flip_display();
@@ -713,6 +823,10 @@ for(i ; i < CANT_BALAS ; i++){
 		}
 
     }
+
+    al_clear_to_color(al_map_rgb(0,0,0));
+    al_rest(1);
+
     al_destroy_sample(song);
     al_destroy_sample(shot);
     al_destroy_sample_instance(songInstance);

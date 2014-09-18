@@ -3,6 +3,7 @@
 
 typedef struct {
     int xNave, yNave;
+    bool colisionado;
     ALLEGRO_BITMAP *Imagen_Nave;
     int cont_balas;
 }NaveG;
@@ -37,7 +38,9 @@ typedef struct {
 
 ///Struct para paso de parámetros para mover la nave
 typedef struct {
+    int cantidad_vidas;
     bool jugando;                ///Estado del juego
+    bool fin_del_juego;
     ALLEGRO_BITMAP *BG; ///Fondo de pantalla
 } DatosGlobales;
 
