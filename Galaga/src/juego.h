@@ -41,6 +41,7 @@ typedef struct {
     bool jugando;                ///Estado del juego
     bool fin_del_juego;
     ALLEGRO_BITMAP *BG; ///Fondo de pantalla
+    ALLEGRO_BITMAP *GameOver;
 } DatosGlobales;
 
 #endif // JUEGO_H_INCLUDED
