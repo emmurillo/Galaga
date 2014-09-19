@@ -34,13 +34,13 @@
 			<Add library="/usr/lib/liballegro.so" />
 			<Add library="pthread" />
 		</Linker>
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/juego.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/juego.h" />
+		<Unit filename="src/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/random.c">
 			<Option compilerVar="CC" />
 		</Unit>
