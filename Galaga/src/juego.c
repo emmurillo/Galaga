@@ -50,6 +50,7 @@ Notas:
 #define CANT_BOSS 4
 #define CANT_MEDIO 8
 #define CANT_BAJO 10
+#define CANT_MARCIANOS 40
 /*Filas en la formación*/
 #define COLUMNA_NAVE ANCHO/2
 #define FILA_NAVE 350
@@ -83,7 +84,7 @@ Notas:
 #define MOV_MARCIANOS 10  //Tamaño del movimiento de los marcianos
 
 // Punataje
-#define PUNTOS 50
+#define PUNTOS 100
 
 /***
  *    ██╗   ██╗ █████╗ ██████╗ ██╗ █████╗ ██████╗ ██╗     ███████╗███████╗
@@ -119,6 +120,9 @@ MedioG MedioArray[CANT_MEDIO];     //Arreglo con los marcianos del medio
 MedioG MedioBajoArray[CANT_MEDIO];     //Arreglo con los marcianos del medio de abajo
 BajoG BajoArray[CANT_BAJO];     //Arreglo con los marcianos de abajo
 BajoG BajoBajoArray[CANT_BAJO];     //Arreglo con los marcianos de abajo
+
+//Contadores lógicos
+int Puntaje;
 
 // Arreglo de naves
 NaveG *Nave;
@@ -207,11 +211,11 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
             for(i; i < CANT_BOSS ; i++){
                 if(cercano_bala(Bala->xBala,BossArray[i].xBoss) && cercano_bala(Bala->yBala,BossArray[i].yBoss))
                 {
-                BossArray[i].visible = 0;
-                BossArray[i].xBoss = MAS_ALLA;
-                BossArray[i].yBoss = MAS_ALLA;
-                desparacer_bala();
-                JuegoDatos->puntaje += PUNTOS;
+                    BossArray[i].visible = 0;
+                    BossArray[i].xBoss = MAS_ALLA;
+                    BossArray[i].yBoss = MAS_ALLA;
+                    desparacer_bala();
+                    Puntaje += PUNTOS;
                 }
             }
 
@@ -220,11 +224,11 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
             for(i; i < CANT_MEDIO ; i++){
                 if(cercano_bala(Bala->xBala,MedioArray[i].xMedio) && cercano_bala(Bala->yBala,MedioArray[i].yMedio))
                 {
-                MedioArray[i].visible = 0;
-                MedioArray[i].xMedio = MAS_ALLA;
-                MedioArray[i].yMedio = MAS_ALLA;
-                desparacer_bala();
-                JuegoDatos->puntaje += PUNTOS;
+                    MedioArray[i].visible = 0;
+                    MedioArray[i].xMedio = MAS_ALLA;
+                    MedioArray[i].yMedio = MAS_ALLA;
+                    desparacer_bala();
+                    Puntaje += PUNTOS;
                 }
             }
 
@@ -233,11 +237,11 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
             for(i; i < CANT_MEDIO ; i++){
                 if(cercano_bala(Bala->xBala,MedioBajoArray[i].xMedio) && cercano_bala(Bala->yBala,MedioBajoArray[i].yMedio))
                 {
-                MedioBajoArray[i].visible = 0;
-                MedioBajoArray[i].xMedio = MAS_ALLA;
-                MedioBajoArray[i].yMedio = MAS_ALLA;
-                desparacer_bala();
-                JuegoDatos->puntaje += PUNTOS;
+                    MedioBajoArray[i].visible = 0;
+                    MedioBajoArray[i].xMedio = MAS_ALLA;
+                    MedioBajoArray[i].yMedio = MAS_ALLA;
+                    desparacer_bala();
+                    Puntaje += PUNTOS;
                 }
             }
 
@@ -246,11 +250,11 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
             for(i; i < CANT_BAJO ; i++){
                 if(cercano_bala(Bala->xBala,BajoArray[i].xBajo) && cercano_bala(Bala->yBala,BajoArray[i].yBajo))
                 {
-                BajoArray[i].visible = 0;
-                BajoArray[i].xBajo = MAS_ALLA;
-                BajoArray[i].yBajo = MAS_ALLA;
-                desparacer_bala();
-                JuegoDatos->puntaje += PUNTOS;
+                    BajoArray[i].visible = 0;
+                    BajoArray[i].xBajo = MAS_ALLA;
+                    BajoArray[i].yBajo = MAS_ALLA;
+                    desparacer_bala();
+                    Puntaje += PUNTOS;
                 }
             }
 
@@ -259,11 +263,11 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
             for(i; i < CANT_BAJO ; i++){
                 if(cercano_bala(Bala->xBala,BajoBajoArray[i].xBajo) && cercano_bala(Bala->yBala,BajoBajoArray[i].yBajo))
                 {
-                BajoBajoArray[i].visible = 0;
-                BajoBajoArray[i].xBajo = MAS_ALLA;
-                BajoBajoArray[i].yBajo = MAS_ALLA;
-                desparacer_bala();
-                JuegoDatos->puntaje += PUNTOS;
+                    BajoBajoArray[i].visible = 0;
+                    BajoBajoArray[i].xBajo = MAS_ALLA;
+                    BajoBajoArray[i].yBajo = MAS_ALLA;
+                    desparacer_bala();
+                    Puntaje += PUNTOS;
                 }
             }
 
@@ -909,9 +913,10 @@ if (!al_install_keyboard()) {
     JuegoDatos->BG = al_load_bitmap("img/Galaga.png");
     JuegoDatos->jugando = 1;
     JuegoDatos->fin_del_juego = 0;
-    JuegoDatos->puntaje = 0;
     JuegoDatos->cantidad_vidas = 2;
     redibujar = 1;
+
+    Puntaje = 0;
 
 
 
@@ -1017,7 +1022,7 @@ if (!al_install_keyboard()) {
 		}
 
     }
-    printf("Puntos: %d", JuegoDatos->puntaje);
+    printf("Puntos: %d", Puntaje);
 
 // Protocolo del fin del juego
     al_destroy_sample(song);

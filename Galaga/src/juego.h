@@ -37,7 +37,6 @@ typedef struct {
 
 ///Struct para paso de parámetros para mover la nave
 typedef struct {
-    long int puntaje;
     int cantidad_vidas;
     int jugando;                ///Estado del juego
     int fin_del_juego;
