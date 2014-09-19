@@ -3,43 +3,43 @@
 
 typedef struct {
     int xNave, yNave;
-    bool colisionado;
+    int colisionado;
     ALLEGRO_BITMAP *Imagen_Nave;
 }NaveG;
 
 typedef struct {
     int xBala, yBala;
     ALLEGRO_BITMAP *Bala;
-    bool disparada;
+    int disparada;
 }BalaG;
 
 typedef struct {
     int xBoss, yBoss;
     int xRespBoss, yRespBoss;
-    bool herido;    ///Para saber si le han disparado
+    int herido;    ///Para saber si le han disparado
     ALLEGRO_BITMAP *BossImg;
-    bool visible;
+    int visible;
 }BossG;
 
 typedef struct {
     int xMedio, yMedio;
     int xRespMedio, yRespMedio; ///Respaldos para que retomen la formación
     ALLEGRO_BITMAP *MedioImg;
-    bool visible;
+    int visible;
 }MedioG;
 
 typedef struct {
     int xBajo, yBajo;
     int xRespBajo, yRespBajo;
     ALLEGRO_BITMAP *BajoImg;
-    bool visible;
+    int visible;
 }BajoG;
 
 ///Struct para paso de parámetros para mover la nave
 typedef struct {
     int cantidad_vidas;
-    bool jugando;                ///Estado del juego
-    bool fin_del_juego;
+    int jugando;                ///Estado del juego
+    int fin_del_juego;
     ALLEGRO_BITMAP *BG; ///Fondo de pantalla
     ALLEGRO_BITMAP *GameOver;
 } DatosGlobales;

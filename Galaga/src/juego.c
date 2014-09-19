@@ -73,6 +73,8 @@ Notas:
 #define ARR_BALA_X 14
 #define ARR_BALA_Y -14
 
+#define MOV_MARCIANOS 10
+
 /***
  *    ██╗   ██╗ █████╗ ██████╗ ██╗ █████╗ ██████╗ ██╗     ███████╗███████╗
  *    ██║   ██║██╔══██╗██╔══██╗██║██╔══██╗██╔══██╗██║     ██╔════╝██╔════╝
@@ -89,8 +91,8 @@ DatosGlobales * JuegoDatos;
  ALLEGRO_DISPLAY *Pantalla;
 ALLEGRO_EVENT_QUEUE *EventQueue;
 ALLEGRO_EVENT Event;
-const float FPS = 24;
-bool redibujar;
+const float FPS = 60;
+int redibujar;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_SAMPLE *shot= NULL;
 ALLEGRO_SAMPLE *song= NULL;
@@ -152,28 +154,28 @@ void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
 }
 
 // Determina si dos puntos están cercanos con un rango de 25 pixeles
-bool cercano(int x1,int x2){
+int cercano(int x1,int x2){
             return abs(x1-x2) < 25;
 }
 
 // Indica si hay una colision entre 2 coordenadas
-bool colision(int xMarciano,int yMarciano, int xNave,int yNave){
+int colision(int xMarciano,int yMarciano, int xNave,int yNave){
         if(cercano(yMarciano, yNave) && cercano(xMarciano, xNave)){
-                return true;
+                return 1;
         }
-        return false;
+        return 0;
 }
 
-bool cercano_bala(int x1,int x2){
+int cercano_bala(int x1,int x2){
             return abs(x1-x2) < 100;
 }
 
 // Indica si hay una colision entre 2 coordenadas
-bool colision_bala(int xMarciano,int yMarciano, int xBala,int yBala){
+int colision_bala(int xMarciano,int yMarciano, int xBala,int yBala){
         if(cercano_bala(yMarciano, yBala) && cercano_bala(xMarciano, xBala)){
-                return true;
+                return 1;
         }
-        return false;
+        return 0;
 }
 
 // Hilo que espera a que una bala sea disparada
@@ -192,7 +194,7 @@ void *espera_balas(ALLEGRO_THREAD *thr, void *datos){
                     al_set_window_title(Pantalla,"Galaga");
                     Bala->xBala = MAS_ALLA;
                     Bala->yBala = MAS_ALLA;
-                    Bala->disparada = false;
+                    Bala->disparada = 0;
     }
     }
 }
@@ -204,7 +206,7 @@ void *espera_balas(ALLEGRO_THREAD *thr, void *datos){
 void matar_nave(){  // Determina la cantidad de vidas y las desaparece de pantalla
         switch(JuegoDatos->cantidad_vidas){
                 case 0:
-                            JuegoDatos->fin_del_juego = true;
+                            JuegoDatos->fin_del_juego = 1;
                 case 2:
                             Vida2->xNave=-100; // Desaparece una vida de la pantalla
                             Vida2->yNave=-100;
@@ -252,9 +254,9 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                             if(colision(BossArray[rand].xBoss, BossArray[rand].yBoss, Nave->xNave, Nave->yNave)){
                                     BossArray[rand].xBoss = MAS_ALLA;
                                     BossArray[rand].yBoss = MAS_ALLA;
-                                    BossArray[rand].visible = false;
+                                    BossArray[rand].visible = 0;
                                     matar_nave();
-                                    Nave->colisionado = true;
+                                    Nave->colisionado = 1;
                             }
                             }
                             BossArray[rand].xBoss = BossArray[rand].xRespBoss;
@@ -286,9 +288,9 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                          if(colision(MedioArray[rand].xMedio, MedioArray[rand].yMedio, Nave->xNave, Nave->yNave)){
                                 MedioArray[rand].xMedio= MAS_ALLA;
                                 MedioArray[rand].yMedio= MAS_ALLA;
-                                MedioArray[rand].visible = false;
+                                MedioArray[rand].visible = 0;
                                 matar_nave();
-                                Nave->colisionado = true;
+                                Nave->colisionado = 1;
                         }
                         }
                         MedioArray[rand].xMedio = MedioArray[rand].xRespMedio;
@@ -320,9 +322,9 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                         if(colision(MedioBajoArray[rand].xMedio, MedioBajoArray[rand].yMedio, Nave->xNave, Nave->yNave)){
                                 MedioBajoArray[rand].xMedio= MAS_ALLA;
                                 MedioBajoArray[rand].yMedio= MAS_ALLA;
-                                MedioBajoArray[rand].visible = false;
+                                MedioBajoArray[rand].visible = 0;
                                 matar_nave();
-                                Nave->colisionado = true;
+                                Nave->colisionado = 1;
                         }
                         }
                         MedioBajoArray[rand].xMedio = MedioBajoArray[rand].xRespMedio;
@@ -354,9 +356,9 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                             if(colision(BajoArray[rand].xBajo, BajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
                                     BajoArray[rand].xBajo= MAS_ALLA;
                                     BajoArray[rand].xBajo= MAS_ALLA;
-                                    BajoArray[rand].visible = false;
+                                    BajoArray[rand].visible = 0;
                                     matar_nave();
-                                    Nave->colisionado = true;
+                                    Nave->colisionado = 1;
                             }
                             }
                             BajoArray[rand].xBajo = BajoArray[rand].xRespBajo;
@@ -388,9 +390,9 @@ void *ataque_marcianos(ALLEGRO_THREAD *thr, void *datos){
                                 if(colision(BajoBajoArray[rand].xBajo, BajoBajoArray[rand].yBajo, Nave->xNave, Nave->yNave)){
                                         BajoBajoArray[rand].xBajo= MAS_ALLA;
                                         BajoBajoArray[rand].yBajo= MAS_ALLA;
-                                        BajoBajoArray[rand].visible = false;
+                                        BajoBajoArray[rand].visible = 0;
                                         matar_nave();
-                                        Nave->colisionado = true;
+                                        Nave->colisionado = 1;
                                 }
                                 }
                                 BajoBajoArray[rand].xBajo = BajoBajoArray[rand].xRespBajo;
@@ -427,7 +429,7 @@ void IniciarMarcianos(){
             BossArray[i].yBoss = yInicial;
             BossArray[i].xRespBoss = xInicial;
             BossArray[i].yRespBoss = yInicial;
-            BossArray[i].visible = true;
+            BossArray[i].visible = 1;
             xInicial+=dist;
     }
 
@@ -441,14 +443,14 @@ void IniciarMarcianos(){
             MedioArray[i].yMedio = yInicial;
             MedioArray[i].xRespMedio = xInicial;
             MedioArray[i].yRespMedio = yInicial;
-            MedioArray[i].visible = true;
+            MedioArray[i].visible = 1;
             // Medios bajos
             MedioBajoArray[i].MedioImg = al_load_bitmap("img/medio.bmp");
             MedioBajoArray[i].xMedio = xInicial;
             MedioBajoArray[i].yMedio = FILA_MEDIA_BAJA;
             MedioBajoArray[i].xRespMedio = xInicial;
             MedioBajoArray[i].yRespMedio = FILA_MEDIA_BAJA;
-            MedioBajoArray[i].visible = true;
+            MedioBajoArray[i].visible = 1;
             xInicial+=dist;
     }
 
@@ -462,14 +464,14 @@ void IniciarMarcianos(){
             BajoArray[i].yBajo = yInicial;
             BajoArray[i].xRespBajo = xInicial;
             BajoArray[i].yRespBajo = yInicial;
-            BajoArray[i].visible = true;
+            BajoArray[i].visible = 1;
             // Ultimos marcianos
             BajoBajoArray[i].BajoImg = al_load_bitmap("img/bajo.bmp");
             BajoBajoArray[i].xBajo = xInicial;
             BajoBajoArray[i].yBajo = FILA_BAJA_BAJA;
             BajoBajoArray[i].xRespBajo = xInicial;
             BajoBajoArray[i].yRespBajo = FILA_BAJA_BAJA;
-            BajoBajoArray[i].visible = true;
+            BajoBajoArray[i].visible = 1;
             xInicial+=dist;
     }
 }
@@ -720,7 +722,7 @@ void dibujarNave( DatosGlobales * datos){
                 al_flip_display();
                 al_rest(0.8);
                 al_draw_bitmap(explosion, MAS_ALLA, MAS_ALLA, 0);
-                Nave->colisionado = false;
+                Nave->colisionado = 0;
     }
     }
 
@@ -742,7 +744,7 @@ void dibujarBala(){
 int iniciarJuego()
 {
 
-    bool hubo_disparo;
+    int hubo_disparo;
 //Iniciar allegro
     al_init();
     al_init_image_addon(); // Para cargar los bmps
@@ -780,7 +782,7 @@ if (!al_install_keyboard()) {
     Nave->Imagen_Nave = al_load_bitmap("img/plane.bmp");
     Nave->xNave=COLUMNA_NAVE;
     Nave->yNave=FILA_NAVE;
-    Nave->colisionado = false;
+    Nave->colisionado = 0;
 
     // Puesto en pantalla de las imágenes de las vidas
     Vida1 = malloc(sizeof(Nave));
@@ -798,15 +800,15 @@ Bala = malloc(sizeof(Bala));
 Bala->Bala = al_load_bitmap("img/Bala.bmp");
 Bala->xBala = MAS_ALLA;
 Bala->yBala = MAS_ALLA;
-Bala->disparada = false;
+Bala->disparada = 0;
 
     //Inicialización de los parámetros
     JuegoDatos = malloc(sizeof (DatosGlobales)); //Datos globales del juego
     JuegoDatos->BG = al_load_bitmap("img/Galaga.png");
-    JuegoDatos->jugando = true;
-    JuegoDatos->fin_del_juego = false;
+    JuegoDatos->jugando = 1;
+    JuegoDatos->fin_del_juego = 0;
     JuegoDatos->cantidad_vidas = 2;
-    redibujar = true;
+    redibujar = 1;
 
 
 
@@ -860,9 +862,9 @@ al_start_thread(hilo_bala);
 
         al_wait_for_event(EventQueue, &Event);
         if(Event.type == ALLEGRO_EVENT_TIMER)
-            redibujar = true;
+            redibujar = 1;
         else if(Event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-            JuegoDatos->jugando = false;
+            JuegoDatos->jugando = 0;
 
 
 //     Eventos del teclado
@@ -872,19 +874,19 @@ al_start_thread(hilo_bala);
                                 case ALLEGRO_KEY_LEFT:
                                     if(Nave->xNave > MIN_VENTANA){
                                         Nave->xNave-=TAM_MOVIMIENTO;
-                                        redibujar = true;
+                                        redibujar = 1;
                                     }
                                     break;
                                 case ALLEGRO_KEY_RIGHT:
                                     if(Nave->xNave < MAX_VENTANA){
                                         Nave->xNave+=TAM_MOVIMIENTO;
-                                        redibujar = true;
+                                        redibujar = 1;
                                         }
                                     break;
 
                                 case ALLEGRO_KEY_SPACE:
                                     al_play_sample(shot,1,0,1,ALLEGRO_PLAYMODE_ONCE,0);
-                                    Bala->disparada = true;
+                                    Bala->disparada = 1;
                                     break;
                             }
                     } while(Event.type == ALLEGRO_KEY_DOWN);
@@ -903,7 +905,7 @@ al_start_thread(hilo_bala);
                             dibujarBala();
                             al_flip_display();
                             al_play_sample_instance(songInstance);      //Reproducir la música
-                            redibujar = false;
+                            redibujar = 0;
                     }
 		}
 
