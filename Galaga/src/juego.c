@@ -211,7 +211,7 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
                 BossArray[i].xBoss = MAS_ALLA;
                 BossArray[i].yBoss = MAS_ALLA;
                 desparacer_bala();
-                mis_datos->puntaje += PUNTOS;
+                JuegoDatos->puntaje += PUNTOS;
                 }
             }
 
@@ -224,7 +224,7 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
                 MedioArray[i].xMedio = MAS_ALLA;
                 MedioArray[i].yMedio = MAS_ALLA;
                 desparacer_bala();
-                mis_datos->puntaje += PUNTOS;
+                JuegoDatos->puntaje += PUNTOS;
                 }
             }
 
@@ -237,7 +237,7 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
                 MedioBajoArray[i].xMedio = MAS_ALLA;
                 MedioBajoArray[i].yMedio = MAS_ALLA;
                 desparacer_bala();
-                mis_datos->puntaje += PUNTOS;
+                JuegoDatos->puntaje += PUNTOS;
                 }
             }
 
@@ -250,7 +250,7 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
                 BajoArray[i].xBajo = MAS_ALLA;
                 BajoArray[i].yBajo = MAS_ALLA;
                 desparacer_bala();
-                mis_datos->puntaje += PUNTOS;
+                JuegoDatos->puntaje += PUNTOS;
                 }
             }
 
@@ -263,7 +263,7 @@ void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
                 BajoBajoArray[i].xBajo = MAS_ALLA;
                 BajoBajoArray[i].yBajo = MAS_ALLA;
                 desparacer_bala();
-                mis_datos->puntaje += PUNTOS;
+                JuegoDatos->puntaje += PUNTOS;
                 }
             }
 
