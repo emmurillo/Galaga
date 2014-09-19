@@ -39,7 +39,13 @@ Notas:
 /*Margenes de la ventana*/
 #define MIN_VENTANA 30
 #define MAX_VENTANA 630
-#define CANT_HILOS 5
+
+// Márgenes para los marcianos
+#define MIN_MARCIANO_X 30
+#define MAX_MARCIANO_X 630
+#define MIN_MARCIANO_Y 10
+#define MAX_MARCIANO_Y 250
+
 /*Cantidad de marcianos*/
 #define CANT_BOSS 4
 #define CANT_MEDIO 8
@@ -68,12 +74,16 @@ Notas:
 
 /*Velocidades de los marcianos*/
 #define VELOCIDAD_MARCIANOS 0.100008
+#define VELOCIDAD_MOVIMIENTO 0.2
 #define VELOCIDAD_BALA 0.02
 
 #define ARR_BALA_X 14
 #define ARR_BALA_Y -14
 
 #define MOV_MARCIANOS 10  //Tamaño del movimiento de los marcianos
+
+// Punataje
+#define PUNTOS 50
 
 /***
  *    ██╗   ██╗ █████╗ ██████╗ ██╗ █████╗ ██████╗ ██╗     ███████╗███████╗
@@ -124,6 +134,7 @@ BalaG *Bala;
 ALLEGRO_THREAD * hilo_bala;
 ALLEGRO_THREAD * hilo_animacion;
 ALLEGRO_THREAD * hilo_ataque;
+ALLEGRO_THREAD * hilo_colision;
 ALLEGRO_MUTEX *mutex;
 
 // Funciones para los hilos
@@ -144,17 +155,16 @@ void *anim_marcianos(ALLEGRO_THREAD *thr, void *datos){
     DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
     mis_datos = (DatosGlobales*)datos;
     while(JuegoDatos->jugando){
-            al_rest(VELOCIDAD_MARCIANOS);
-            DerechaMarcianos();
-            al_rest(VELOCIDAD_MARCIANOS);
-            IzquierdaMarcianos();
-            al_rest(VELOCIDAD_MARCIANOS);
-            ArribaMarcianos();
-            al_rest(VELOCIDAD_MARCIANOS);
-            AbajoMarcianos();
-
-
+        al_rest(VELOCIDAD_MOVIMIENTO);
+        DerechaMarcianos();
+        al_rest(VELOCIDAD_MOVIMIENTO);
+        IzquierdaMarcianos();
+        al_rest(VELOCIDAD_MOVIMIENTO);
+        ArribaMarcianos();
+        al_rest(VELOCIDAD_MOVIMIENTO);
+        AbajoMarcianos();
     }
+
 }
 
 // Determina si dos puntos están cercanos con un rango de 25 pixeles
@@ -171,7 +181,7 @@ int colision(int xMarciano,int yMarciano, int xNave,int yNave){
 }
 
 int cercano_bala(int x1,int x2){
-            return abs(x1-x2) < 100;
+            return abs(x1-x2) < 20;
 }
 
 // Indica si hay una colision entre 2 coordenadas
@@ -180,6 +190,84 @@ int colision_bala(int xMarciano,int yMarciano, int xBala,int yBala){
                 return 1;
         }
         return 0;
+}
+
+void desparacer_bala(){
+    Bala->yBala = -10;
+}
+
+// Hilo que espera a que colisione una bala con un marciano
+void *espera_colision(ALLEGRO_THREAD *thr, void *datos){
+    DatosGlobales * mis_datos = malloc(sizeof(DatosGlobales));
+    mis_datos = (DatosGlobales*)datos;
+    int i = 0;
+    while(JuegoDatos->jugando){
+            // Muertes de los boss
+            i=0;
+            for(i; i < CANT_BOSS ; i++){
+                if(cercano_bala(Bala->xBala,BossArray[i].xBoss) && cercano_bala(Bala->yBala,BossArray[i].yBoss))
+                {
+                BossArray[i].visible = 0;
+                BossArray[i].xBoss = MAS_ALLA;
+                BossArray[i].yBoss = MAS_ALLA;
+                desparacer_bala();
+                mis_datos->puntaje += PUNTOS;
+                }
+            }
+
+            // Muertes de los Medios
+            i=0;
+            for(i; i < CANT_MEDIO ; i++){
+                if(cercano_bala(Bala->xBala,MedioArray[i].xMedio) && cercano_bala(Bala->yBala,MedioArray[i].yMedio))
+                {
+                MedioArray[i].visible = 0;
+                MedioArray[i].xMedio = MAS_ALLA;
+                MedioArray[i].yMedio = MAS_ALLA;
+                desparacer_bala();
+                mis_datos->puntaje += PUNTOS;
+                }
+            }
+
+            // Muertes de los Medios Bajos
+            i=0;
+            for(i; i < CANT_MEDIO ; i++){
+                if(cercano_bala(Bala->xBala,MedioBajoArray[i].xMedio) && cercano_bala(Bala->yBala,MedioBajoArray[i].yMedio))
+                {
+                MedioBajoArray[i].visible = 0;
+                MedioBajoArray[i].xMedio = MAS_ALLA;
+                MedioBajoArray[i].yMedio = MAS_ALLA;
+                desparacer_bala();
+                mis_datos->puntaje += PUNTOS;
+                }
+            }
+
+            // Muertes de los Bajos
+            i=0;
+            for(i; i < CANT_BAJO ; i++){
+                if(cercano_bala(Bala->xBala,BajoArray[i].xBajo) && cercano_bala(Bala->yBala,BajoArray[i].yBajo))
+                {
+                BajoArray[i].visible = 0;
+                BajoArray[i].xBajo = MAS_ALLA;
+                BajoArray[i].yBajo = MAS_ALLA;
+                desparacer_bala();
+                mis_datos->puntaje += PUNTOS;
+                }
+            }
+
+            // Muertes de los Bajos Bajos
+            i=0;
+            for(i; i < CANT_BAJO ; i++){
+                if(cercano_bala(Bala->xBala,BajoBajoArray[i].xBajo) && cercano_bala(Bala->yBala,BajoBajoArray[i].yBajo))
+                {
+                BajoBajoArray[i].visible = 0;
+                BajoBajoArray[i].xBajo = MAS_ALLA;
+                BajoBajoArray[i].yBajo = MAS_ALLA;
+                desparacer_bala();
+                mis_datos->puntaje += PUNTOS;
+                }
+            }
+
+    }
 }
 
 // Hilo que espera a que una bala sea disparada
@@ -428,7 +516,7 @@ void IniciarMarcianos(){
     int xInicial = COLUMNA_BOSS;    //Coordenadas del Boss mas a la izquierda en la formación fija
     int yInicial = FILA_SUPERIOR;
     for(i; i<CANT_BOSS;i++){ //Inicialización
-            BossArray[i].BossImg = al_load_bitmap("img/superior.bmp");
+            BossArray[i].BossImg = al_load_bitmap("img/medio.bmp");
             BossArray[i].xBoss = xInicial;
             BossArray[i].yBoss = yInicial;
             BossArray[i].xRespBoss = xInicial;
@@ -442,14 +530,14 @@ void IniciarMarcianos(){
     xInicial = COLUMNA_MEDIA;    //Coordenadas del Boss mas a la izquierda en la formación fija
     yInicial = FILA_MEDIO;
     for(i; i<CANT_MEDIO;i++){ //Inicialización
-            MedioArray[i].MedioImg = al_load_bitmap("img/medio.bmp");
+            MedioArray[i].MedioImg = al_load_bitmap("img/superior.bmp");
             MedioArray[i].xMedio = xInicial;
             MedioArray[i].yMedio = yInicial;
             MedioArray[i].xRespMedio = xInicial;
             MedioArray[i].yRespMedio = yInicial;
             MedioArray[i].visible = 1;
             // Medios bajos
-            MedioBajoArray[i].MedioImg = al_load_bitmap("img/medio.bmp");
+            MedioBajoArray[i].MedioImg = al_load_bitmap("img/mediobajo.png");
             MedioBajoArray[i].xMedio = xInicial;
             MedioBajoArray[i].yMedio = FILA_MEDIA_BAJA;
             MedioBajoArray[i].xRespMedio = xInicial;
@@ -463,7 +551,7 @@ void IniciarMarcianos(){
     xInicial = COLUMNA_BAJO;    //Coordenadas del Boss mas a la izquierda en la formación fija
     yInicial = FILA_BAJA;
     for(i; i<CANT_BAJO;i++){ //Inicialización
-            BajoArray[i].BajoImg = al_load_bitmap("img/bajo.bmp");
+            BajoArray[i].BajoImg = al_load_bitmap("img/bajobajo.png");
             BajoArray[i].xBajo = xInicial;
             BajoArray[i].yBajo = yInicial;
             BajoArray[i].xRespBajo = xInicial;
@@ -809,18 +897,19 @@ if (!al_install_keyboard()) {
     Vida2->xNave=COLUMNA_VIDAS + 20;
     Vida2->yNave=FILA_VIDAS;
 
-// Inicialización de la bala
-Bala = malloc(sizeof(Bala));
-Bala->Bala = al_load_bitmap("img/Bala.bmp");
-Bala->xBala = MAS_ALLA;
-Bala->yBala = MAS_ALLA;
-Bala->disparada = 0;
+    // Inicialización de la bala
+    Bala = malloc(sizeof(Bala));
+    Bala->Bala = al_load_bitmap("img/Bala.bmp");
+    Bala->xBala = MAS_ALLA;
+    Bala->yBala = MAS_ALLA;
+    Bala->disparada = 0;
 
     //Inicialización de los parámetros
     JuegoDatos = malloc(sizeof (DatosGlobales)); //Datos globales del juego
     JuegoDatos->BG = al_load_bitmap("img/Galaga.png");
     JuegoDatos->jugando = 1;
     JuegoDatos->fin_del_juego = 0;
+    JuegoDatos->puntaje = 0;
     JuegoDatos->cantidad_vidas = 2;
     redibujar = 1;
 
@@ -850,18 +939,22 @@ Bala->disparada = 0;
     DibujarMarcianos();
 
 
-// Creación del hilo para dibujar
+    // Creación del hilo para dibujar
     mutex = al_create_mutex();
     hilo_animacion = al_create_thread(anim_marcianos, JuegoDatos);
     al_start_thread(hilo_animacion);
 
-// Hilo que hace que los marcianos ataquen
+    // Hilo que hace que los marcianos ataquen
     hilo_ataque = al_create_thread(ataque_marcianos,JuegoDatos);
     al_start_thread(hilo_ataque);
 
-// Hilo que espera por un disparo
-hilo_bala = al_create_thread(espera_balas,JuegoDatos);
-al_start_thread(hilo_bala);
+    // Hilo que espera por un disparo
+    hilo_bala = al_create_thread(espera_balas,JuegoDatos);
+    al_start_thread(hilo_bala);
+
+    // Hilo que espera por un disparo
+    hilo_colision = al_create_thread(espera_colision,JuegoDatos);
+    al_start_thread(hilo_colision);
 
     al_start_timer(timer);
 
@@ -924,7 +1017,7 @@ al_start_thread(hilo_bala);
 		}
 
     }
-
+    printf("Puntos: %d", JuegoDatos->puntaje);
 
 // Protocolo del fin del juego
     al_destroy_sample(song);
