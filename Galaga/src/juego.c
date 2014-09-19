@@ -187,14 +187,7 @@ void *espera_balas(ALLEGRO_THREAD *thr, void *datos){
             Bala->yBala = Nave->yNave + ARR_BALA_Y;
             while(Bala->yBala > 0){
                     Bala->yBala -= 10;
-                    al_rest(VELOCIDAD_BALA);// Revisión de la trayectoria de la bala
-                        if( cercano(Bala->yBala, FILA_BAJA)){
-                                Bala->yBala = 0;
-                                BajoBajoArray[4].visible = false;
-                        }
-                        else{
-                                al_set_window_title(Pantalla,"Nada");
-                        }
+                    al_rest(VELOCIDAD_BALA);
             }
                     al_set_window_title(Pantalla,"Galaga");
                     Bala->xBala = MAS_ALLA;
