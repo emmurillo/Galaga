@@ -3,6 +3,8 @@
 *.ini
 Galaga/*.depend
 Galaga/*.layout
+Galaga/*.depend
+Galaga/*.ini
 
 bin/
 obj/
